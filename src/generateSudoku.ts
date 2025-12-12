@@ -46,7 +46,9 @@ function generateCompleteBoard(r: number, c: number): boolean {
   return false
 }
 
+console.time('generate complete board')
 generateCompleteBoard(0, 0)
+console.timeEnd('generate complete board')
 
 let puzzle: number[][] = []
 let solution: number = 0
@@ -86,8 +88,9 @@ function checkPuzzleSolution(r: number, c: number): void {
 // 1. random empty position
 // 2. validate only one solution
 // 3. if none solution or more than 1 solution, re-generate random empty position
-const LEVEL = 'easy'
+const LEVEL = 'hard'
 
+console.time('check solution')
 do {
   puzzle = clone2DArray(board)
   solution = 0
@@ -110,8 +113,8 @@ do {
   }
   checkPuzzleSolution(0, 0)
 } while (solution !== 1)
+console.timeEnd('check solution')
 
-console.log(`Solution count: ${solution}`)
 console.log('Board: ', board)
 
 export { puzzle }
