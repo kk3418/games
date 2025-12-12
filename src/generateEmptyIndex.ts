@@ -1,20 +1,20 @@
 import { random } from 'lodash-es'
 
 export default function generateEmptyIndex(level: string): number[] {
-  let numberOfEmpty = 25
+  let numberOfEmpty = 30
 
   switch (level) {
     case 'easy':
-      numberOfEmpty = 25
+      numberOfEmpty = 30
       break;
     case 'medium':
-      numberOfEmpty = 35
+      numberOfEmpty = 40
       break;
     case 'hard':
-      numberOfEmpty = 45
+      numberOfEmpty = 50
       break;
     default:
-      numberOfEmpty = 25
+      numberOfEmpty = 30
   }
 
   let i = 1
