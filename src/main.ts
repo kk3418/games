@@ -5,15 +5,15 @@ const mainDiv = document.getElementById("main")
 
 let activeCellInput: HTMLInputElement | null = null
 
-function sanitizeCellValue(raw: string): string {
-  const match = raw.match(/[1-9]/)
-  return match ? match[0] : ''
-}
+// function sanitizeCellValue(raw: string): string {
+//   const match = raw.match(/[1-9]/)
+//   return match ? match[0] : ''
+// }
 
 function setCellValue(input: HTMLInputElement, value: string): void {
   if (input.disabled || input.readOnly) return
   input.value = value
-  input.dispatchEvent(new Event('input', { bubbles: true }))
+  // input.dispatchEvent(new Event('input', { bubbles: true }))
   input.focus()
 }
 
@@ -75,28 +75,28 @@ function createSudokuTable(board: number[][]): HTMLTableElement {
         input.addEventListener('click', () => {
           activeCellInput = input
         })
-        input.addEventListener('input', () => {
-          input.value = sanitizeCellValue(input.value)
-        })
+        // input.addEventListener('input', () => {
+        //   input.value = sanitizeCellValue(input.value)
+        // })
         input.addEventListener('keydown', (e) => {
           if (e.ctrlKey || e.metaKey || e.altKey) return
           if (e.isComposing) return
 
-          const allowedNonChar = new Set([
-            'Backspace',
-            'Delete',
-            'Tab',
-            'ArrowLeft',
-            'ArrowRight',
-            'ArrowUp',
-            'ArrowDown',
-            'Home',
-            'End',
-            'Enter',
-            'Escape',
-          ])
+          // const allowedNonChar = new Set([
+          //   'Backspace',
+          //   'Delete',
+          //   'Tab',
+          //   'ArrowLeft',
+          //   'ArrowRight',
+          //   'ArrowUp',
+          //   'ArrowDown',
+          //   'Home',
+          //   'End',
+          //   'Enter',
+          //   'Escape',
+          // ])
 
-          if (allowedNonChar.has(e.key)) return
+          // if (allowedNonChar.has(e.key)) return
 
           if (e.key === '0') {
             e.preventDefault()
