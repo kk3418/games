@@ -1,5 +1,7 @@
-import { puzzle } from '@/generateSudoku'
+import generateSudoku from '@/generateSudoku'
 import '@/style.css'
+
+const { puzzle } = generateSudoku()
 
 const mainDiv = document.getElementById("main")
 
@@ -17,6 +19,14 @@ function setCellValue(input: HTMLInputElement, value: string): void {
   input.focus()
 }
 
+function setInputToStorage(inputValue: string, row: number, col: number): void {
+  localStorage.setItem(`input-${row}-${col}`, inputValue)
+}
+
+function getInputFromStorage(row: number, col: number): string {
+  return localStorage.getItem(`input-${row}-${col}`) ?? ''
+}
+
 function createKeypad(): HTMLDivElement {
   const keypad = document.createElement('div')
   keypad.className = 'keypad'
@@ -29,6 +39,7 @@ function createKeypad(): HTMLDivElement {
     btn.addEventListener('click', () => {
       if (!activeCellInput) return
       setCellValue(activeCellInput, String(n))
+      setInputToStorage(String(n), Number(activeCellInput.dataset.row), Number(activeCellInput.dataset.col))
     })
     keypad.appendChild(btn)
   }
@@ -40,13 +51,14 @@ function createKeypad(): HTMLDivElement {
   clearBtn.addEventListener('click', () => {
     if (!activeCellInput) return
     setCellValue(activeCellInput, '')
+      setInputToStorage('', Number(activeCellInput.dataset.row), Number(activeCellInput.dataset.col))
   })
   keypad.appendChild(clearBtn)
 
   return keypad
 }
 
-function createSudokuTable(board: number[][]): HTMLTableElement {
+function createSudokuTable(puzzle: number[][]): HTMLTableElement {
   const table = document.createElement('table')
   table.className = 'sudoku'
 
@@ -63,12 +75,15 @@ function createSudokuTable(board: number[][]): HTMLTableElement {
       input.inputMode = 'numeric'
       input.maxLength = 1
 
-      const value = board?.[r]?.[c] ?? 0
+      const value = puzzle?.[r]?.[c] ?? 0
       input.value = value === 0 ? '' : String(value)
       if (value !== 0) {
         input.disabled = true
         td.classList.add('given')
       } else {
+        if (getInputFromStorage(r, c)) {
+          input.value = getInputFromStorage(r, c)
+        }
         input.addEventListener('focus', () => {
           activeCellInput = input
         })
@@ -101,12 +116,16 @@ function createSudokuTable(board: number[][]): HTMLTableElement {
           if (e.key === '0') {
             e.preventDefault()
             setCellValue(input, '')
+            setInputToStorage('', r, c)
             return
           }
 
           if (e.key.length === 1) {
-            if (e.key >= '1' && e.key <= '9') return
-            e.preventDefault()
+            if (e.key >= '1' && e.key <= '9') {
+              e.preventDefault()
+              setCellValue(input, e.key)
+              setInputToStorage(e.key, r, c)
+            }
           }
         })
       }
@@ -123,12 +142,19 @@ function createSudokuTable(board: number[][]): HTMLTableElement {
   return table
 }
 
-
 if (mainDiv) {
   const container = document.createElement('div')
   container.className = 'container'
 
-  container.appendChild(createSudokuTable(puzzle))
-  container.appendChild(createKeypad())
+  const sudokuWrap = document.createElement('div')
+  sudokuWrap.className = 'sudoku-wrap'
+  sudokuWrap.appendChild(createSudokuTable(puzzle))
+
+  const controlsWrap = document.createElement('div')
+  controlsWrap.className = 'controls'
+  controlsWrap.appendChild(createKeypad())
+
+  container.appendChild(sudokuWrap)
+  container.appendChild(controlsWrap)
   mainDiv.replaceChildren(container)
 }
