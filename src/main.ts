@@ -1,7 +1,7 @@
 import generateSudoku from '@/generateSudoku'
 import '@/style.css'
 
-const { puzzle } = generateSudoku()
+const { puzzle } = generateSudoku('medium')
 
 const mainDiv = document.getElementById("main")
 
@@ -25,6 +25,39 @@ function setInputToStorage(inputValue: string, row: number, col: number): void {
 
 function getInputFromStorage(row: number, col: number): string {
   return localStorage.getItem(`input-${row}-${col}`) ?? ''
+}
+
+function createDifficultySelect(): HTMLDivElement {
+  const wrap = document.createElement('div')
+  wrap.className = 'difficulty'
+
+  const label = document.createElement('label')
+  label.className = 'difficulty-label'
+  label.htmlFor = 'difficulty-select'
+  label.textContent = 'LEVEL'
+
+  const select = document.createElement('select')
+  select.className = 'difficulty-select'
+  select.id = 'difficulty-select'
+  select.name = 'difficulty'
+
+  const options: Array<{ value: string; text: string }> = [
+    { value: 'easy', text: 'Easy' },
+    { value: 'medium', text: 'Medium' },
+    { value: 'hard', text: 'Hard' },
+  ]
+
+  for (const opt of options) {
+    const option = document.createElement('option')
+    option.value = opt.value
+    option.textContent = opt.text
+    if (opt.value === 'medium') option.selected = true
+    select.appendChild(option)
+  }
+
+  wrap.appendChild(label)
+  wrap.appendChild(select)
+  return wrap
 }
 
 function createKeypad(): HTMLDivElement {
@@ -150,11 +183,18 @@ if (mainDiv) {
   sudokuWrap.className = 'sudoku-wrap'
   sudokuWrap.appendChild(createSudokuTable(puzzle))
 
+  const difficultyWrap = createDifficultySelect()
+
   const controlsWrap = document.createElement('div')
   controlsWrap.className = 'controls'
   controlsWrap.appendChild(createKeypad())
 
+  const sideWrap = document.createElement('div')
+  sideWrap.className = 'side'
+  sideWrap.appendChild(difficultyWrap)
+  sideWrap.appendChild(controlsWrap)
+
   container.appendChild(sudokuWrap)
-  container.appendChild(controlsWrap)
+  container.appendChild(sideWrap)
   mainDiv.replaceChildren(container)
 }

@@ -2,7 +2,7 @@ import shuffleArray from '@/shuffleArray'
 import generateEmptyIndex from '@/generateEmptyIndex'
 import { clone2DArray } from '@/copyUtilities'
 
-function generateSudoku () {
+function generateSudoku (level: string) {
   const puzzleStorage = JSON.parse(localStorage.getItem('puzzle') ?? '[]')
   const boardStorage = JSON.parse(localStorage.getItem('board') ?? '[]')
 
@@ -96,7 +96,6 @@ function generateSudoku () {
   // 1. random empty position
   // 2. validate only one solution
   // 3. if none solution or more than 1 solution, re-generate random empty position
-  const LEVEL = 'hard'
 
   console.time('check solution')
   do {
@@ -106,7 +105,7 @@ function generateSudoku () {
     cols.forEach(col => col.fill(false))
     boxes.forEach(box => box.fill(false))
 
-    const emptyIndex = generateEmptyIndex(LEVEL)
+    const emptyIndex = generateEmptyIndex(level)
     emptyIndex.forEach(index => {
       const row = Math.floor(index / 9)
       const col = index % 9
