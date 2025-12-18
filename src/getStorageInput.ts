@@ -1,4 +1,4 @@
-export function getAllInput() {
+export function getAllInput(): Record<string, string | null> {
   const all = Object.fromEntries(
     Array.from({ length: localStorage.length }, (_, i) => {
       const k = localStorage.key(i)!;

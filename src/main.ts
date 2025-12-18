@@ -2,6 +2,7 @@ import generateSudoku from '@/generateSudoku'
 import '@/style.css'
 import { createDifficultySelect, createKeypad, createSudokuTable } from '@/sudokuUI'
 import { getAllInput } from '@/getStorageInput'
+import { showEndGameModal } from '@/endGameModal'
 
 // initial dom
 const mainDiv = document.getElementById("main")
@@ -28,21 +29,44 @@ function resetGame(level: string, sudokuWrap: HTMLElement) {
 
 function checkSolution() {
   console.log('check solution')
+
   const inputValue = getAllInput()
-  console.log(inputValue)
   const boardStorage = JSON.parse(localStorage.getItem('board') ?? '[]')
+
+  if (Object.keys(inputValue).length !== boardStorage.length) {
+    showEndGameModal({
+      title: 'Not yet',
+      message: 'Something wrong :(',
+      primaryText: 'Continue',
+    })
+    return
+  }
+
   for (const [k, v] of Object.entries(inputValue)) {
     const [row, col] = k.split('-')
     if (boardStorage[row][col] !== Number(v)) {
-      alert('Something wrong :(')
+      showEndGameModal({
+        title: 'Not yet',
+        message: 'Something wrong :(',
+        primaryText: 'Continue',
+      })
       return
     }
   }
-  alert('Congratulations! You solved the puzzle correctly!')
+
+  const lastGameLevel = localStorage.getItem('level') ?? ''
+  showEndGameModal({
+    title: 'Congratulations!',
+    message: 'You solved the puzzle correctly!',
+    primaryText: 'New Game',
+    secondaryText: 'Close',
+    endGame: resetGame,
+    endGameArgs: [lastGameLevel, sudokuWrap],
+  })
 }
 
 if (mainDiv) {
-  const { puzzle } = generateSudoku('medium')
+  const { puzzle } = generateSudoku(localStorage.getItem('level') || 'medium')
 
   sudokuWrap.appendChild(
     createSudokuTable(puzzle, (input) => {
