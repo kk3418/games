@@ -158,7 +158,8 @@
   transform: translateY(1px);
 }
 
-.keypad-clear {
+.keypad-clear,
+.keypad-check {
   grid-column: span 2;
   border-radius: unset;
 }
