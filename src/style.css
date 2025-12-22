@@ -146,10 +146,10 @@
 }
 
 .keypad-btn {
-  height: 2.8rem;
+  height: 2.5rem;
   border: 1px solid #ccc;
   background: #fff;
-  font-size: 0.9rem;
+  font-size: 1rem;
   cursor: pointer;
   border-radius: 25%;
 }
@@ -158,10 +158,15 @@
   transform: translateY(1px);
 }
 
-.keypad-clear,
+.keypad-clear {
+  background: #fff;
+  position: relative;
+  grid-column: span 1;
+}
+
 .keypad-check {
   grid-column: span 2;
-  border-radius: unset;
+  border-radius: 10%;
 }
 
 dialog#endgame-dialog {

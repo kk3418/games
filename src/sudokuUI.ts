@@ -82,7 +82,7 @@ export function createKeypad(
   const clearBtn = document.createElement('button')
   clearBtn.type = 'button'
   clearBtn.className = 'keypad-btn keypad-clear'
-  clearBtn.textContent = 'Clear'
+  clearBtn.textContent = 'X'
   clearBtn.addEventListener('click', () => {
     const activeCellInput = getActiveCellInput()
     if (!activeCellInput) return

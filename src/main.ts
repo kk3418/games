@@ -6,7 +6,7 @@ import { showEndGameModal } from '@/endGameModal'
 
 // TODO:
 // - 做一個選單 可以選擇其他遊戲 例如貪吃蛇
-// - 數獨優化：1. 做一個 reset 按鈕 2. 新增上下左右鍵移動 focus input
+// - 數獨優化：新增上下左右鍵移動 focus input
 
 // initial dom
 const mainDiv = document.getElementById("main")
