@@ -4,6 +4,10 @@ import { createDifficultySelect, createKeypad, createSudokuTable } from '@/sudok
 import { getAllInput } from '@/getStorageInput'
 import { showEndGameModal } from '@/endGameModal'
 
+// TODO:
+// - 做一個選單 可以選擇其他遊戲 例如貪吃蛇
+// - 數獨優化：1. 做一個 reset 按鈕 2. 新增上下左右鍵移動 focus input
+
 // initial dom
 const mainDiv = document.getElementById("main")
 
@@ -83,6 +87,7 @@ if (mainDiv) {
   controlsWrap.appendChild(createKeypad(
     () => activeCellInput,
     checkSolution,
+    () => resetGame(localStorage.getItem('level') ?? 'medium', sudokuWrap),
   ))
 
   const sideWrap = document.createElement('div')

@@ -55,7 +55,8 @@ export function createDifficultySelect(
 
 export function createKeypad(
   getActiveCellInput: () => HTMLInputElement | null,
-  checkSolution: () => void
+  checkSolution: () => void,
+  resetGame: () => void,
 ): HTMLDivElement {
   const keypad = document.createElement('div')
   keypad.className = 'keypad'
@@ -102,6 +103,15 @@ export function createKeypad(
     checkSolution()
   })
   keypad.appendChild(checkBtn)
+
+  const resetBtn = document.createElement('button')
+  resetBtn.type = 'button'
+  resetBtn.className = 'keypad-btn keypad-check'
+  resetBtn.textContent = 'Reset'
+  resetBtn.addEventListener('click', () => {
+    resetGame()
+  })
+  keypad.appendChild(resetBtn)
 
   return keypad
 }
