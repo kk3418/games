@@ -159,21 +159,49 @@ export function createSudokuTable(
           if (e.ctrlKey || e.metaKey || e.altKey) return
           if (e.isComposing) return
 
-          // const allowedNonChar = new Set([
-          //   'Backspace',
-          //   'Delete',
-          //   'Tab',
-          //   'ArrowLeft',
-          //   'ArrowRight',
-          //   'ArrowUp',
-          //   'ArrowDown',
-          //   'Home',
-          //   'End',
-          //   'Enter',
-          //   'Escape',
-          // ])
+          const directionKeys = new Set([
+            'ArrowLeft',
+            'ArrowRight',
+            'ArrowUp',
+            'ArrowDown',
+          ])
 
-          // if (allowedNonChar.has(e.key)) return
+          if (directionKeys.has(e.key)) {
+            e.preventDefault()
+            const moveFocus = (dr: number, dc: number) => {
+              let nr = r + dr
+              let nc = c + dc
+
+              while (nr >= 0 && nr < 9 && nc >= 0 && nc < 9) {
+                const next = table.querySelector<HTMLInputElement>(
+                  `input.cell-input[data-row="${nr}"][data-col="${nc}"]`,
+                )
+                if (next && !next.disabled && !next.readOnly) {
+                  next.focus()
+                  return
+                }
+                nr += dr
+                nc += dc
+              }
+            }
+
+            switch (e.key) {
+              case 'ArrowLeft':
+                moveFocus(0, -1)
+                break
+              case 'ArrowRight':
+                moveFocus(0, 1)
+                break
+              case 'ArrowUp':
+                moveFocus(-1, 0)
+                break
+              case 'ArrowDown':
+                moveFocus(1, 0)
+                break
+            }
+
+            return
+          }
 
           if (e.key === '0' || e.key === 'Backspace' || e.key === 'Delete') {
             e.preventDefault()
