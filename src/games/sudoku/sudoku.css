@@ -6,20 +6,13 @@
   width: 100%;
   box-sizing: border-box;
   padding: 1.5rem;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  column-gap: 1.5rem;
-  align-items: start;
-}
-
-.sudoku-wrap {
-  grid-column: 2;
-  justify-self: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
 }
 
 .side {
-  grid-column: 3;
-  justify-self: start;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -191,11 +184,6 @@ dialog#endgame-dialog::backdrop {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto auto;
     justify-items: center;
-    row-gap: 0.75rem;
-  }
-
-  .side {
-    display: contents;
   }
 
   .difficulty {
