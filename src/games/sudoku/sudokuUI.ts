@@ -1,4 +1,4 @@
-import { getCellValueFromStorage, setCellValueToStorage } from '@/cellStorage'
+import { getCellValueFromStorage, setCellValueToStorage } from '@/games/sudoku/cellStorage'
 
 export function sanitizeCellValue(raw: string): string {
   const match = raw.match(/[1-9]/)

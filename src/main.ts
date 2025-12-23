@@ -1,7 +1,7 @@
-import '@/style.css'
-import { SudokuGame } from '@/sudokuGame'
-import { SnakeGame } from '@/snakeGame'
-import type { Game } from '@/game'
+import '@/styles/main.css'
+import { SudokuGame } from '@/games/sudoku/sudokuGame'
+import { SnakeGame } from '@/games/snake/snakeGame'
+import type { Game } from '@/types/game'
 
 const gameList = document.getElementById('game-list')
 const contentDiv = document.getElementById('game-content')

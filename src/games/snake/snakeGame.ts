@@ -1,4 +1,4 @@
-import type { Game } from '@/game'
+import type { Game } from '@/types/game'
 
 export class SnakeGame implements Game {
   name = 'Snake - coming soon'

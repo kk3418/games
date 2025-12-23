@@ -1,6 +1,6 @@
-import shuffleArray from '@/shuffleArray'
-import generateEmptyIndex from '@/generateEmptyIndex'
-import { clone2DArray } from '@/copyUtilities'
+import shuffleArray from '@/utilities/shuffleArray'
+import generateEmptyIndex from '@/games/sudoku/generateEmptyIndex'
+import { clone2DArray } from '@/utilities/copyUtilities'
 
 function generateSudoku (level: string) {
   const puzzleStorage = JSON.parse(localStorage.getItem('puzzle') ?? '[]')

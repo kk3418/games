@@ -1,8 +1,9 @@
-import generateSudoku from '@/generateSudoku'
-import { createDifficultySelect, createKeypad, createSudokuTable } from '@/sudokuUI'
-import { getAllInput } from '@/getStorageInput'
-import { showEndGameModal } from '@/endGameModal'
-import type { Game } from '@/game'
+import '@/games/sudoku/sudoku.css'
+import generateSudoku from '@/games/sudoku/generateSudoku'
+import { createDifficultySelect, createKeypad, createSudokuTable } from '@/games/sudoku/sudokuUI'
+import { getAllInput } from '@/games/sudoku/getStorageInput'
+import { showEndGameModal } from '@/games/sudoku/endGameModal'
+import type { Game } from '@/types/game'
 
 export class SudokuGame implements Game {
   name = 'Sudoku'
