@@ -1,101 +1,73 @@
-import generateSudoku from '@/generateSudoku'
 import '@/style.css'
-import { createDifficultySelect, createKeypad, createSudokuTable } from '@/sudokuUI'
-import { getAllInput } from '@/getStorageInput'
-import { showEndGameModal } from '@/endGameModal'
+import { SudokuGame } from '@/sudokuGame'
+import { SnakeGame } from '@/snakeGame'
+import type { Game } from '@/game'
 
-// TODO:
-// - 做一個選單 可以選擇其他遊戲 例如貪吃蛇
-// - 數獨優化：新增上下左右鍵移動 focus input
+const gameList = document.getElementById('game-list')
+const contentDiv = document.getElementById('game-content')
+const menuToggle = document.getElementById('menu-toggle')
+const sideMenu = document.getElementById('side-menu')
 
-// initial dom
-const mainDiv = document.getElementById("main")
+if (menuToggle && sideMenu) {
+  menuToggle.addEventListener('click', () => {
+    sideMenu.classList.toggle('open')
+  })
 
-const container = document.createElement('div')
-container.className = 'container'
-
-const sudokuWrap = document.createElement('div')
-sudokuWrap.className = 'sudoku-wrap'
-
-
-let activeCellInput: HTMLInputElement | null = null
-
-function resetGame(level: string, sudokuWrap: HTMLElement) {
-  localStorage.clear()
-  const { puzzle } = generateSudoku(level)
-
-  sudokuWrap.replaceChildren(
-    createSudokuTable(puzzle, (input) => {
-      activeCellInput = input
-    }),
-  )
+  // Close menu when clicking outside on mobile
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768 &&
+        sideMenu.classList.contains('open') &&
+        !sideMenu.contains(e.target as Node) &&
+        !menuToggle.contains(e.target as Node)) {
+      sideMenu.classList.remove('open')
+    }
+  })
 }
 
-function checkSolution() {
-  console.log('check solution')
+if (gameList && contentDiv) {
+  let activeGame: Game | null = null
 
-  const inputValue = getAllInput()
-  const boardStorage = JSON.parse(localStorage.getItem('board') ?? '[]')
+  const games: Game[] = [
+    new SudokuGame(),
+    new SnakeGame(),
+  ]
 
-  if (Object.keys(inputValue).length !== boardStorage.length) {
-    showEndGameModal({
-      title: 'Not yet',
-      message: 'Something wrong :(',
-      primaryText: 'Continue',
-    })
-    return
+  const switchGame = (game: Game) => {
+    if (activeGame === game) return
+
+    if (activeGame) {
+      activeGame.destroy()
+    }
+    contentDiv.innerHTML = ''
+    activeGame = game
+    activeGame.init(contentDiv)
   }
 
-  for (const [k, v] of Object.entries(inputValue)) {
-    const [row, col] = k.split('-')
-    if (boardStorage[row][col] !== Number(v)) {
-      showEndGameModal({
-        title: 'Not yet',
-        message: 'Something wrong :(',
-        primaryText: 'Continue',
-      })
-      return
+  games.forEach(game => {
+    const item = document.createElement('li')
+    const button = document.createElement('button')
+    button.textContent = game.name
+    button.className = 'game-menu-btn'
+    button.onclick = () => {
+      document.querySelectorAll('.game-menu-btn').forEach(btn => btn.classList.remove('active'))
+      button.classList.add('active')
+      switchGame(game)
+
+      // Close menu on mobile selection
+      if (window.innerWidth <= 768 && sideMenu) {
+        sideMenu.classList.remove('open')
+      }
+    }
+    item.appendChild(button)
+    gameList.appendChild(item)
+  })
+
+  // Initialize with the first game
+  if (games.length > 0) {
+    // Select the first game by default
+    const firstGameBtn = gameList.querySelector('.game-menu-btn') as HTMLElement
+    if (firstGameBtn) {
+      firstGameBtn.click()
     }
   }
-
-  const lastGameLevel = localStorage.getItem('level') ?? ''
-  showEndGameModal({
-    title: 'Congratulations!',
-    message: 'You solved the puzzle correctly!',
-    primaryText: 'New Game',
-    secondaryText: 'Close',
-    endGame: resetGame,
-    endGameArgs: [lastGameLevel, sudokuWrap],
-  })
-}
-
-if (mainDiv) {
-  const { puzzle } = generateSudoku(localStorage.getItem('level') || 'medium')
-
-  sudokuWrap.appendChild(
-    createSudokuTable(puzzle, (input) => {
-      activeCellInput = input
-    }),
-  )
-
-  const difficultyWrap = createDifficultySelect((level) => {
-    resetGame(level, sudokuWrap)
-  })
-
-  const controlsWrap = document.createElement('div')
-  controlsWrap.className = 'controls'
-  controlsWrap.appendChild(createKeypad(
-    () => activeCellInput,
-    checkSolution,
-    () => resetGame(localStorage.getItem('level') ?? 'medium', sudokuWrap),
-  ))
-
-  const sideWrap = document.createElement('div')
-  sideWrap.className = 'side'
-  sideWrap.appendChild(difficultyWrap)
-  sideWrap.appendChild(controlsWrap)
-
-  container.appendChild(sudokuWrap)
-  container.appendChild(sideWrap)
-  mainDiv.appendChild(container)
 }

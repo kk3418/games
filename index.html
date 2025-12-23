@@ -6,7 +6,16 @@
   <title>Sudoku</title>
 </head>
 <body>
-  <div id="main"></div>
+  <div id="main">
+    <button id="menu-toggle" class="menu-toggle" aria-label="Toggle menu">☰</button>
+    <div class="side-menu" id="side-menu">
+      <h2>Games</h2>
+      <ul class="game-list" id="game-list">
+        <!-- Game items will be injected here -->
+      </ul>
+    </div>
+    <div class="game-content" id="game-content"></div>
+  </div>
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
