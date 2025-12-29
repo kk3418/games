@@ -1,6 +1,7 @@
 import type { Game } from '@/types/game'
 
 export class SnakeGame implements Game {
+  id = 'snake'
   name = 'Snake - coming soon'
   private container: HTMLElement | null = null
 

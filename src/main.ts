@@ -41,33 +41,52 @@ if (gameList && contentDiv) {
     contentDiv.innerHTML = ''
     activeGame = game
     activeGame.init(contentDiv)
+
+    // Update active menu item
+    document.querySelectorAll('.game-menu-btn').forEach(btn => {
+      if (btn.getAttribute('data-game-id') === game.id) {
+        btn.classList.add('active')
+      } else {
+        btn.classList.remove('active')
+      }
+    })
+
+    // Close menu on mobile
+    if (window.innerWidth <= 768 && sideMenu && sideMenu.classList.contains('open')) {
+      sideMenu.classList.remove('open')
+    }
   }
+
+  const handleRouting = () => {
+    const hash = window.location.hash.slice(1) // remove '#'
+    const targetGame = games.find(g => g.id === hash) || games[0]
+
+    if (targetGame) {
+      switchGame(targetGame)
+    }
+  }
+
+  // Bind routing events
+  window.addEventListener('hashchange', handleRouting)
+  window.addEventListener('load', () => {
+    // If no hash, set default to first game
+    if (!window.location.hash && games.length > 0) {
+      window.location.hash = games[0].id
+    } else {
+      handleRouting()
+    }
+  })
 
   games.forEach(game => {
     const item = document.createElement('li')
     const button = document.createElement('button')
     button.textContent = game.name
     button.className = 'game-menu-btn'
+    button.setAttribute('data-game-id', game.id)
     button.onclick = () => {
-      document.querySelectorAll('.game-menu-btn').forEach(btn => btn.classList.remove('active'))
-      button.classList.add('active')
-      switchGame(game)
-
-      // Close menu on mobile selection
-      if (window.innerWidth <= 768 && sideMenu) {
-        sideMenu.classList.remove('open')
-      }
+      window.location.hash = game.id
     }
     item.appendChild(button)
     gameList.appendChild(item)
   })
-
-  // Initialize with the first game
-  if (games.length > 0) {
-    // Select the first game by default
-    const firstGameBtn = gameList.querySelector('.game-menu-btn') as HTMLElement
-    if (firstGameBtn) {
-      firstGameBtn.click()
-    }
-  }
 }

@@ -6,6 +6,7 @@ import { showEndGameModal } from '@/games/sudoku/endGameModal'
 import type { Game } from '@/types/game'
 
 export class SudokuGame implements Game {
+  id = 'sudoku'
   name = 'Sudoku'
   private activeCellInput: HTMLInputElement | null = null
   private container: HTMLElement | null = null
