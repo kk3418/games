@@ -39,13 +39,10 @@ export class SudokuGame implements Game {
       () => this.resetGame(localStorage.getItem('level') ?? 'medium'),
     ))
 
-    const sideWrap = document.createElement('div')
-    sideWrap.className = 'side'
-    sideWrap.appendChild(difficultyWrap)
-    sideWrap.appendChild(controlsWrap)
 
+    this.container.appendChild(difficultyWrap)
     this.container.appendChild(this.sudokuWrap)
-    this.container.appendChild(sideWrap)
+    this.container.appendChild(controlsWrap)
     rootElement.appendChild(this.container)
   }
 
