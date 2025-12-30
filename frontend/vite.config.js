@@ -2,18 +2,18 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path'
 
 export default defineConfig({
-  root: './frontend',
+  root: './',
   build: {
     outDir: 'dist',
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'frontend/index.html')
+        main: resolve(__dirname, 'index.html')
       }
     }
   },
   resolve: {
     alias: {
-      "@": resolve(__dirname, 'frontend/src')
+      "@": resolve(__dirname, 'src')
     },
   },
   server: {
