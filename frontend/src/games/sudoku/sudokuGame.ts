@@ -71,7 +71,7 @@ export class SudokuGame implements Game {
     const inputValue = getAllInput()
     const boardStorage = JSON.parse(localStorage.getItem('board') ?? '[]')
 
-    if (Object.keys(inputValue).length !== boardStorage.length) {
+    if (Object.keys(inputValue)) {
       showEndGameModal({
         title: 'Not yet',
         message: 'Something wrong :(',
@@ -82,7 +82,7 @@ export class SudokuGame implements Game {
 
     for (const [k, v] of Object.entries(inputValue)) {
       const [row, col] = k.split('-')
-      if (boardStorage[row][col] !== Number(v)) {
+      if (boardStorage[row][col] !== Number(v) && v) {
         showEndGameModal({
           title: 'Not yet',
           message: 'Something wrong :(',
@@ -97,7 +97,6 @@ export class SudokuGame implements Game {
       title: 'Congratulations!',
       message: 'You solved the puzzle correctly!',
       primaryText: 'New Game',
-      secondaryText: 'Close',
       endGame: (level: string) => this.resetGame(level),
       endGameArgs: [lastGameLevel],
     })
