@@ -56,7 +56,7 @@ export class GoogleAuth {
 
   private async handleCredentialResponse(response: google.accounts.id.CredentialResponse) {
     try {
-      const res = await fetch(`${BACKEND_URL}/google`, {
+      const res = await fetch(`${BACKEND_URL}/oauth`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
