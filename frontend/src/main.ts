@@ -1,12 +1,20 @@
 import '@/styles/main.css'
 import { SudokuGame } from '@/games/sudoku/sudokuGame'
 import { SnakeGame } from '@/games/snake/snakeGame'
+import { GoogleAuth } from '@/auth/googleAuth'
 import type { Game } from '@/types/game'
 
 const gameList = document.getElementById('game-list')
 const contentDiv = document.getElementById('game-content')
 const menuToggle = document.getElementById('menu-toggle')
 const sideMenu = document.getElementById('side-menu')
+
+// Initialize Auth
+const auth = new GoogleAuth('user-section')
+// Wait for Google script to load if necessary, but init calls render immediately if user is stored
+window.addEventListener('load', () => {
+    auth.init()
+})
 
 if (menuToggle && sideMenu) {
   menuToggle.addEventListener('click', () => {

@@ -42,6 +42,40 @@ body {
   color: #343a40;
 }
 
+.user-section {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.logout-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: #bb2d3b;
+}
+
+.error {
+  color: #dc3545;
+  font-size: 0.875rem;
+}
+
 .game-list {
   list-style: none;
   padding: 0;
