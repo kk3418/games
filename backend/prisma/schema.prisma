@@ -19,6 +19,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   snakeGame SnakeGame?
+  sudokuGame SudokuGame?
 }
 
 model SnakeGame {
@@ -33,4 +34,15 @@ model SnakeGame {
   user         User     @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model SudokuGame {
+  id        Int      @id @default(autoincrement())
+  puzzle    Json
+  board     Json
+  level     String
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
