@@ -18,4 +18,14 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  snakeGame SnakeGame?
+}
+
+model SnakeGame {
+  id           Int      @id @default(autoincrement())
+  highestScore Int?
+  currentScore Int?
+  userId       Int      @unique
+  user         User     @relation(fields: [userId], references: [id])
+  updatedAt    DateTime @updatedAt
 }
