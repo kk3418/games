@@ -101,7 +101,11 @@ export const googleLogin = async (req: Request, res: Response) => {
     }
 
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
+
+    res.json({
+      token: token,
+      user: { id: user.id, email: user.email, name: user.name }
+    });
   } catch (error) {
     console.error('Google login error:', error);
     res.status(500).json({ error: 'Authentication failed' });
@@ -114,6 +118,11 @@ export const getMe = async (req: any, res: Response) => {
       where: { id: req.user.userId },
       select: { id: true, email: true, name: true, createdAt: true }
     });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });

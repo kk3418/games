@@ -2,6 +2,7 @@ export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 import type { AuthResponse, User } from '@/types/auth';
+import { api } from '@/utilities/api';
 
 export class GoogleAuth {
   private userSection: HTMLElement;
@@ -56,19 +57,7 @@ export class GoogleAuth {
 
   private async handleCredentialResponse(response: google.accounts.id.CredentialResponse) {
     try {
-      const res = await fetch(`${BACKEND_URL}/oauth`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ credential: response.credential }),
-      });
-
-      if (!res.ok) {
-        throw new Error('Login failed');
-      }
-
-      const data: AuthResponse = await res.json();
+      const data = await api.post<AuthResponse>('/oauth', { credential: response.credential });
       this.handleLoginSuccess(data);
     } catch (error) {
       console.error('Error logging in:', error);

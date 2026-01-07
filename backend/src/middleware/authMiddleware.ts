@@ -14,10 +14,41 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
   jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
     if (err) {
-      res.status(403).json({ error: 'Invalid token' });
+      res.status(403).json({ error: 'Invalid or expired token' });
       return;
     }
     (req as any).user = user;
     next();
+  });
+};
+
+// Flexible authentication - allows expired tokens and auto-refreshes them
+export const authenticateWithTokenRefresh = (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    res.status(401).json({ error: 'Access token required' });
+    return;
+  }
+
+  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    if (err && err.name === 'TokenExpiredError') {
+      // Token is expired, generate new token automatically
+      const decoded = jwt.decode(token) as any;
+      const newToken = jwt.sign({ userId: decoded.userId, email: decoded.email }, JWT_SECRET, { expiresIn: '1h' });
+
+      // Set new token in response header
+      res.setHeader('X-New-Token', newToken);
+
+      (req as any).user = decoded;
+      next();
+    } else if (err) {
+      res.status(403).json({ error: 'Invalid token' });
+      return;
+    } else {
+      (req as any).user = user;
+      next();
+    }
   });
 };
