@@ -30,8 +30,8 @@ export const createSudokuGame = async (req: Request, res: Response) => {
       where: { userId },
     });
 
-    if (existingRecord) {
-      res.status(400).json({ error: 'Sudoku game record already exists for this user' });
+    if (JSON.stringify(existingRecord?.puzzle) === JSON.stringify(puzzle)) {
+      res.status(400).json({ error: 'This puzzle already exists for this user' });
       return;
     }
 
