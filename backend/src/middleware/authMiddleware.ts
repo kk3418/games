@@ -35,14 +35,24 @@ export const authenticateWithTokenRefresh = (req: Request, res: Response, next: 
   jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
     if (err && err.name === 'TokenExpiredError') {
       // Token is expired, generate new token automatically
-      const decoded = jwt.decode(token) as any;
-      const newToken = jwt.sign({ userId: decoded.userId, email: decoded.email }, JWT_SECRET, { expiresIn: '1h' });
+      jwt.verify(token, JWT_SECRET, { ignoreExpiration: true }, (verifyErr: any, verifiedUser: any) => {
+        if (verifyErr) {
+          res.status(403).json({ error: 'Invalid token' });
+          return;
+        }
 
-      // Set new token in response header
-      res.setHeader('X-New-Token', newToken);
+        const newToken = jwt.sign(
+          { userId: verifiedUser.userId, email: verifiedUser.email },
+          JWT_SECRET,
+          { expiresIn: '1h' }
+        );
 
-      (req as any).user = decoded;
-      next();
+        // Set new token in response header
+        res.setHeader('X-New-Token', newToken);
+
+        (req as any).user = verifiedUser;
+        next();
+      });
     } else if (err) {
       res.status(403).json({ error: 'Invalid token' });
       return;
