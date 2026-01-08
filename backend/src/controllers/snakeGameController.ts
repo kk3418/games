@@ -63,24 +63,57 @@ export const createSnakeGameScore = async (req: Request, res: Response) => {
 export const updateSnakeGameScore = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
-    const { currentScore, highestScore, level, snakeLength, snakePosition, foodPosition } = req.body;
+    const { currentScore, level, snakePosition, foodPosition } = req.body;
 
-    const updateData: any = {};
+    if (
+      currentScore !== undefined &&
+      (typeof currentScore !== 'number' || !Number.isFinite(currentScore))
+    ) {
+      res.status(400).json({ error: 'Invalid currentScore' });
+      return;
+    }
+
+    const updateData: Record<string, unknown> = {};
     if (currentScore !== undefined) updateData.currentScore = currentScore;
-    if (highestScore !== undefined) updateData.highestScore = highestScore;
     if (level !== undefined) updateData.level = level;
-    if (snakeLength !== undefined) updateData.snakeLength = snakeLength;
-    if (snakePosition !== undefined) updateData.snakePosition = snakePosition;
+    if (snakePosition !== undefined) {
+      updateData.snakePosition = snakePosition;
+      updateData.snakeLength = Array.isArray(snakePosition) ? snakePosition.length : undefined;
+    }
     if (foodPosition !== undefined) updateData.foodPosition = foodPosition;
 
-    const snakeGame = await prisma.snakeGame.upsert({
-      where: { userId },
-      update: updateData,
-      create: {
-        userId,
-        ...updateData,
-      },
+    if (Object.keys(updateData).length === 0) {
+      res.status(400).json({ error: 'No fields to update' });
+      return;
+    }
+
+    const snakeGame = await prisma.$transaction(async (tx) => {
+      await tx.snakeGame.update({
+        where: { userId },
+        data: updateData,
+      });
+
+      if (typeof currentScore === 'number' && Number.isFinite(currentScore)) {
+        await tx.snakeGame.updateMany({
+          where: {
+            userId,
+            highestScore: {
+              lt: currentScore,
+            },
+          },
+          data: {
+            highestScore: currentScore,
+          },
+        });
+      }
+
+      return tx.snakeGame.findUnique({ where: { userId } });
     });
+
+    if (!snakeGame) {
+      res.status(404).json({ error: 'Snake game record not found' });
+      return;
+    }
 
     res.json(snakeGame);
   } catch (error) {

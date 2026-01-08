@@ -30,9 +30,8 @@ export const createSudokuGame = async (req: Request, res: Response) => {
       where: { userId },
     });
 
-    if (JSON.stringify(existingRecord?.puzzle) === JSON.stringify(puzzle)) {
-      res.status(400).json({ error: 'This puzzle already exists for this user' });
-      return;
+    if (existingRecord) {
+      return res.status(400).json({ error: 'Sudoku game record already exists for this user' });
     }
 
     const sudokuGame = await prisma.sudokuGame.create({
@@ -55,35 +54,21 @@ export const updateSudokuGame = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
 
-    const keys = Object.keys(req.body ?? {});
-    const allowedKeys = new Set(['board']);
-    const hasDisallowedKey = keys.some((k) => !allowedKeys.has(k));
+    const { puzzle, level  } = req.body;
 
-    if (hasDisallowedKey) {
-      res.status(400).json({ error: 'Only board can be updated' });
-      return;
-    }
-
-    if (!('board' in (req.body ?? {}))) {
-      res.status(400).json({ error: 'Missing board' });
-      return;
-    }
-
-    const { board } = req.body;
-
-    const existingRecord = await prisma.sudokuGame.findUnique({
-      where: { userId },
-    });
-
-    if (!existingRecord) {
-      res.status(404).json({ error: 'Sudoku game record not found' });
-      return;
-    }
+    const updateData: Record<string, unknown> = {};
+    if (puzzle !== undefined) updateData.puzzle = puzzle;
+    if (level !== undefined) updateData.level = level;
 
     const sudokuGame = await prisma.sudokuGame.update({
       where: { userId },
-      data: { board },
+      data: updateData,
     });
+
+    if (!sudokuGame) {
+      res.status(404).json({ error: 'Sudoku game record not found' });
+      return;
+    }
 
     res.json(sudokuGame);
   } catch (error) {
