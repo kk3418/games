@@ -8,15 +8,39 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const url = `${BACKEND_URL}${path}`;
   const token = localStorage.getItem('token');
 
+  // Debug: Log token information
+  console.log(`API Request to ${path}:`, {
+    hasToken: token ? true : false,
+    tokenLength: token?.length || 0
+  });
+
   const headers = {
     'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...options.headers,
   };
+
+  // Only add Authorization header if token exists and is not empty
+  if (token && token.trim() !== '') {
+    headers['Authorization'] = `Bearer ${token}`;
+    console.log('Authorization header added:', {
+      headerValue: `Bearer ${token.substring(0, 5)}...${token.substring(token.length - 5)}`,
+      tokenType: typeof token
+    });
+  } else {
+    console.warn('No token available for request to:', path);
+  }
+
+  console.log(`Sending request to ${url}`, { method: options.method || 'GET', headers });
 
   const response = await fetch(url, {
     ...options,
     headers,
+  });
+
+  console.log(`Response from ${path}:`, {
+    status: response.status,
+    statusText: response.statusText,
+    hasNewToken: response.headers.has('X-New-Token'),
   });
 
   // Check for new token in headers
@@ -26,12 +50,27 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
 
   if (!response.ok) {
+    console.error(`API error for ${path}:`, {
+      status: response.status,
+      statusText: response.statusText
+    });
+
     if (response.status === 401 || response.status === 403) {
-      // Optional: handle unauthorized/forbidden (e.g., clear storage and redirect to login)
+      console.warn('Authentication error detected. Token may be invalid or expired.');
+      // Uncomment to automatically clear token on auth errors:
       // localStorage.removeItem('token');
       // localStorage.removeItem('user');
     }
-    const errorData = await response.json().catch(() => ({}));
+
+    let errorData;
+    try {
+      errorData = await response.json();
+      console.error('Error response data:', errorData);
+    } catch (e) {
+      errorData = {};
+      console.error('Could not parse error response as JSON');
+    }
+
     throw new Error(errorData.error || `Request failed with status ${response.status}`);
   }
 
@@ -49,10 +88,10 @@ export const api = {
       body: JSON.stringify(body)
     }),
 
-  put: <T>(path: string, body: any, options?: RequestOptions) =>
+  patch: <T>(path: string, body: any, options?: RequestOptions) =>
     request<T>(path, {
       ...options,
-      method: 'PUT',
+      method: 'PATCH',
       body: JSON.stringify(body)
     }),
 
