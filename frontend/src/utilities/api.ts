@@ -14,7 +14,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     tokenLength: token?.length || 0
   });
 
-  const headers = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...options.headers,
   };
