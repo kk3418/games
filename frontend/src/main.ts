@@ -2,6 +2,7 @@ import '@/styles/main.css'
 import { SudokuGame } from '@/games/sudoku/sudokuGame'
 import { SnakeGame } from '@/games/snake/snakeGame'
 import { GoogleAuth } from '@/auth/googleAuth'
+import { showLoginGate } from '@/auth/loginGate'
 import type { Game } from '@/types/game'
 
 const gameList = document.getElementById('game-list')
@@ -11,29 +12,17 @@ const sideMenu = document.getElementById('side-menu')
 
 // Initialize Auth
 const auth = new GoogleAuth('user-section')
-// Wait for Google script to load if necessary, but init calls render immediately if user is stored
-window.addEventListener('load', () => {
-    auth.init()
-})
 
-if (menuToggle && sideMenu) {
-  menuToggle.addEventListener('click', () => {
-    sideMenu.classList.toggle('open')
-  })
+let gamesInitialized = false
+let loginGateOpen = false
+let activeGame: Game | null = null
+let rerenderRoute: null | (() => void) = null
 
-  // Close menu when clicking outside on mobile
-  document.addEventListener('click', (e) => {
-    if (window.innerWidth <= 768 &&
-        sideMenu.classList.contains('open') &&
-        !sideMenu.contains(e.target as Node) &&
-        !menuToggle.contains(e.target as Node)) {
-      sideMenu.classList.remove('open')
-    }
-  })
-}
+const initGames = () => {
+  if (gamesInitialized) return
+  gamesInitialized = true
 
-if (gameList && contentDiv) {
-  let activeGame: Game | null = null
+  if (!gameList || !contentDiv) return
 
   const games: Game[] = [
     new SudokuGame(),
@@ -76,14 +65,14 @@ if (gameList && contentDiv) {
 
   // Bind routing events
   window.addEventListener('hashchange', handleRouting)
-  window.addEventListener('load', () => {
-    // If no hash, set default to first game
-    if (!window.location.hash && games.length > 0) {
-      window.location.hash = games[0].id
-    } else {
-      handleRouting()
-    }
-  })
+  rerenderRoute = handleRouting
+
+  // Initialize current route immediately
+  if (!window.location.hash && games.length > 0) {
+    window.location.hash = games[0].id
+  } else {
+    handleRouting()
+  }
 
   games.forEach(game => {
     const item = document.createElement('li')
@@ -96,5 +85,69 @@ if (gameList && contentDiv) {
     }
     item.appendChild(button)
     gameList.appendChild(item)
+  })
+}
+
+window.addEventListener('load', () => {
+  auth.init()
+
+  auth.onLogout(() => {
+    if (loginGateOpen) return
+
+    if (activeGame) {
+      activeGame.destroy()
+      activeGame = null
+    }
+
+    if (contentDiv) contentDiv.innerHTML = ''
+    document.querySelectorAll('.game-menu-btn').forEach(btn => btn.classList.remove('active'))
+
+    if (sideMenu && sideMenu.classList.contains('open')) {
+      sideMenu.classList.remove('open')
+    }
+
+    loginGateOpen = true
+
+    showLoginGate({
+      auth,
+      onAuthenticated: () => {
+        loginGateOpen = false
+        auth.init()
+        initGames()
+        rerenderRoute?.()
+      },
+    })
+  })
+
+  if (auth.isAuthenticated()) {
+    initGames()
+    return
+  }
+
+  loginGateOpen = true
+  showLoginGate({
+    auth,
+    onAuthenticated: () => {
+      loginGateOpen = false
+      auth.init()
+      initGames()
+      rerenderRoute?.()
+    },
+  })
+})
+
+if (menuToggle && sideMenu) {
+  menuToggle.addEventListener('click', () => {
+    sideMenu.classList.toggle('open')
+  })
+
+  // Close menu when clicking outside on mobile
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768 &&
+        sideMenu.classList.contains('open') &&
+        !sideMenu.contains(e.target as Node) &&
+        !menuToggle.contains(e.target as Node)) {
+      sideMenu.classList.remove('open')
+    }
   })
 }

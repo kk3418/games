@@ -55,11 +55,27 @@ export class SudokuGame implements Game {
     const level = localStorage.getItem('level') || serverGame?.level || 'medium'
     localStorage.setItem('level', level)
 
-    // Generate sudoku puzzle or use one from localStorage
-    const generated = generateSudoku(level)
-    const puzzle = generated.puzzle
-    const board = generated.board
-    this.basePuzzle = puzzle
+    let puzzle: number[][]
+    let board: number[][]
+
+    if (!serverGame) {
+      // 1) If GET is 404 => frontend generates then creates record
+      const generated = generateSudoku(level)
+      puzzle = generated.puzzle
+      board = generated.board
+      this.basePuzzle = puzzle
+
+      this.createGameOnServer({ puzzle, board, level })
+    } else {
+      // 2) If GET returns puzzle/board => use server data directly; do NOT generate
+      puzzle = serverGame.puzzle ?? []
+      board = serverGame.board ?? []
+      localStorage.setItem('puzzle', JSON.stringify(puzzle))
+      localStorage.setItem('board', JSON.stringify(board))
+      localStorage.setItem('level', serverGame.level || level)
+
+      this.basePuzzle = puzzle
+    }
 
     this.sudokuWrap.appendChild(
       createSudokuTable(puzzle, (input) => {
@@ -68,19 +84,6 @@ export class SudokuGame implements Game {
     )
 
     window.addEventListener('sudoku:cell-change', this.onCellChange)
-
-    const progressPuzzle = this.getProgressPuzzle(puzzle)
-    const needsSync =
-      !serverGame ||
-      JSON.stringify(serverGame.puzzle) !== JSON.stringify(progressPuzzle) ||
-      JSON.stringify(serverGame.board) !== JSON.stringify(board) ||
-      serverGame.level !== level
-
-    if (!serverGame) {
-      this.createGameOnServer({ puzzle: progressPuzzle, board, level })
-    } else if (needsSync) {
-      this.updateGameToServer({ puzzle: progressPuzzle, board, level })
-    }
 
     const difficultyWrap = createDifficultySelect((level) => {
       this.resetGame(level)
@@ -138,7 +141,7 @@ export class SudokuGame implements Game {
     )
 
     // Update the game on server
-    this.updateGameToServer({ puzzle: this.getProgressPuzzle(puzzle), board, level })
+    this.updateGameToServer({ puzzle, board, level })
   }
 
   private checkSolution() {

@@ -7,6 +7,8 @@ import { api } from '@/utilities/api';
 export class GoogleAuth {
   private userSection: HTMLElement;
   private currentUser: User | null = null;
+  private loginListeners: Array<() => void> = [];
+  private logoutListeners: Array<() => void> = [];
 
   constructor(elementId: string) {
     const el = document.getElementById(elementId);
@@ -19,23 +21,33 @@ export class GoogleAuth {
 
   public init() {
     this.render();
-    if (!this.currentUser) {
-      this.initGoogleBtn();
+  }
+
+  public isAuthenticated(): boolean {
+    return Boolean(this.currentUser)
+  }
+
+  public onLogin(listener: () => void) {
+    this.loginListeners.push(listener)
+    return () => {
+      const idx = this.loginListeners.indexOf(listener)
+      if (idx >= 0) this.loginListeners.splice(idx, 1)
     }
   }
 
-  private loadUserFromStorage() {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    if (storedUser && token) {
-      this.currentUser = JSON.parse(storedUser);
+  public onLogout(listener: () => void): () => void
+  public onLogout(listener: () => void) {
+    this.logoutListeners.push(listener)
+    return () => {
+      const idx = this.logoutListeners.indexOf(listener)
+      if (idx >= 0) this.logoutListeners.splice(idx, 1)
     }
   }
 
-  private initGoogleBtn() {
+  public renderGoogleButton(container: HTMLElement): void {
     if (!GOOGLE_CLIENT_ID) {
       console.error('VITE_GOOGLE_CLIENT_ID is not set');
-      this.userSection.innerHTML = '<p class="error">Google Client ID not configured</p>';
+      container.innerHTML = '<p class="error">Google Client ID not configured</p>';
       return;
     }
 
@@ -44,15 +56,25 @@ export class GoogleAuth {
       return;
     }
 
+    container.innerHTML = ''
+
     google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: this.handleCredentialResponse.bind(this)
     });
 
     google.accounts.id.renderButton(
-      this.userSection,
+      container,
       { theme: "outline", size: "large", type: "standard" } as google.accounts.id.GsiButtonConfiguration
     );
+  }
+
+  private loadUserFromStorage() {
+    const storedUser = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    if (storedUser && token) {
+      this.currentUser = JSON.parse(storedUser);
+    }
   }
 
   private async handleCredentialResponse(response: google.accounts.id.CredentialResponse) {
@@ -65,20 +87,48 @@ export class GoogleAuth {
     }
   }
 
-  private handleLoginSuccess(data: AuthResponse) {
+  public handleLoginSuccess(data: AuthResponse) {
     this.currentUser = data.user;
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
     this.render();
+    for (const listener of this.loginListeners) {
+      listener()
+    }
+  }
+
+  private clearAppStorage(): void {
+    const keysToRemove = new Set<string>([
+      'token',
+      'user',
+      'puzzle',
+      'board',
+      'level',
+      'snake-difficulty',
+      'snake-highscore',
+    ])
+
+    for (const k of keysToRemove) {
+      localStorage.removeItem(k)
+    }
+
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i)
+      if (!k) continue
+      if (k.startsWith('input-') || k.startsWith('snake-')) {
+        localStorage.removeItem(k)
+      }
+    }
   }
 
   private handleLogout() {
     this.currentUser = null;
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    this.clearAppStorage();
     this.render();
-    // Re-initialize Google button after logout
-    this.initGoogleBtn();
+
+    for (const listener of this.logoutListeners) {
+      listener()
+    }
   }
 
   private render() {
