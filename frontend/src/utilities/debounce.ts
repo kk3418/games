@@ -1,6 +1,6 @@
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number = 500
 ): (...args: Parameters<T>) => void {
   let timeout: number | undefined;
 

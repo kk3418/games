@@ -7,6 +7,7 @@ import type { Game } from '@/types/game'
 import { sudokuApi, type SudokuGameData } from '@/games/sudoku/sudokuApi'
 import { debounce } from '@/utilities/debounce'
 
+const UPDATE_GAME_DEBOUNCE_TIME = 1000
 export class SudokuGame implements Game {
   id = 'sudoku'
   name = 'Sudoku'
@@ -14,12 +15,20 @@ export class SudokuGame implements Game {
   private container: HTMLElement | null = null
   private sudokuWrap: HTMLElement | null = null
   private gameData: SudokuGameData | null = null
-  private isFirstTimeUser = true
+  private basePuzzle: number[][] | null = null
+
+  private onCellChange = () => {
+    this.debouncedUpdateGame()
+  }
 
   // Debounced function for updating the game state
-  private debouncedUpdateGame = debounce((puzzle: string[][], level: string) => {
-    this.updateGameToServer(puzzle, level)
-  }, 500)
+  private debouncedUpdateGame = debounce(() => {
+    const level = localStorage.getItem('level') || this.gameData?.level || 'medium'
+    const basePuzzle = this.basePuzzle
+    if (!basePuzzle) return
+    const progressPuzzle = this.getProgressPuzzle(basePuzzle)
+    this.updateGameToServer({ puzzle: progressPuzzle, level })
+  }, UPDATE_GAME_DEBOUNCE_TIME)
 
   async init(rootElement: HTMLElement): Promise<void> {
     this.container = document.createElement('div')
@@ -29,43 +38,49 @@ export class SudokuGame implements Game {
     this.sudokuWrap.className = 'sudoku-wrap'
 
     // Try to load game from server first
+    let serverGame: SudokuGameData | null = null
     try {
-      await this.loadGameFromServer()
+      serverGame = await sudokuApi.getSudokuGame()
+      this.gameData = serverGame
     } catch (error) {
-      console.log('First time user or error loading game, will create new game')
-      this.isFirstTimeUser = true
+      if (error instanceof Error && error.name === 'NotFoundError') {
+        serverGame = null
+      } else {
+        console.error('Error loading game from server:', error)
+        serverGame = null
+      }
     }
 
     // Use saved level or default to medium
-    const level = this.gameData?.level || localStorage.getItem('level') || 'medium'
+    const level = localStorage.getItem('level') || serverGame?.level || 'medium'
+    localStorage.setItem('level', level)
 
-    // Generate sudoku puzzle or use one from server
-    let puzzle
-    if (this.gameData?.puzzle) {
-      puzzle = this.gameData.puzzle
-    } else {
-      const generated = generateSudoku(level)
-      puzzle = generated.puzzle
-      // Save the board for validation
-      localStorage.setItem('board', JSON.stringify(generated.board))
-      localStorage.setItem('level', level)
-
-      // If first time user, create new game on server
-      if (this.isFirstTimeUser) {
-        this.createGameOnServer(puzzle, generated.board, level)
-      }
-    }
+    // Generate sudoku puzzle or use one from localStorage
+    const generated = generateSudoku(level)
+    const puzzle = generated.puzzle
+    const board = generated.board
+    this.basePuzzle = puzzle
 
     this.sudokuWrap.appendChild(
       createSudokuTable(puzzle, (input) => {
         this.activeCellInput = input
-        // When input changes, update the game state with debounce
-        input.addEventListener('input', () => {
-          const currentPuzzle = this.getCurrentPuzzleState()
-          this.debouncedUpdateGame(currentPuzzle, level)
-        })
       }),
     )
+
+    window.addEventListener('sudoku:cell-change', this.onCellChange)
+
+    const progressPuzzle = this.getProgressPuzzle(puzzle)
+    const needsSync =
+      !serverGame ||
+      JSON.stringify(serverGame.puzzle) !== JSON.stringify(progressPuzzle) ||
+      JSON.stringify(serverGame.board) !== JSON.stringify(board) ||
+      serverGame.level !== level
+
+    if (!serverGame) {
+      this.createGameOnServer({ puzzle: progressPuzzle, board, level })
+    } else if (needsSync) {
+      this.updateGameToServer({ puzzle: progressPuzzle, board, level })
+    }
 
     const difficultyWrap = createDifficultySelect((level) => {
       this.resetGame(level)
@@ -91,31 +106,39 @@ export class SudokuGame implements Game {
       this.container.remove()
       this.container = null
     }
+    window.removeEventListener('sudoku:cell-change', this.onCellChange)
+  }
+
+  private clearSudokuStorage(): void {
+    localStorage.removeItem('puzzle')
+    localStorage.removeItem('board')
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i)
+      if (k && k.startsWith('input-')) {
+        localStorage.removeItem(k)
+      }
+    }
   }
 
   private resetGame(level: string) {
     if (!this.sudokuWrap) return
-    localStorage.clear()
+    this.clearSudokuStorage()
     const generated = generateSudoku(level)
     const { puzzle, board } = generated
 
     // Save the board for validation
     localStorage.setItem('board', JSON.stringify(board))
     localStorage.setItem('level', level)
+    this.basePuzzle = puzzle
 
     this.sudokuWrap.replaceChildren(
       createSudokuTable(puzzle, (input) => {
         this.activeCellInput = input
-        // When input changes, update the game state with debounce
-        input.addEventListener('input', () => {
-          const currentPuzzle = this.getCurrentPuzzleState()
-          this.debouncedUpdateGame(currentPuzzle, level)
-        })
       }),
     )
 
     // Update the game on server
-    this.updateGameToServer(puzzle, level)
+    this.updateGameToServer({ puzzle: this.getProgressPuzzle(puzzle), board, level })
   }
 
   private checkSolution() {
@@ -155,27 +178,10 @@ export class SudokuGame implements Game {
     })
   }
 
-  // Load game data from server
-  private async loadGameFromServer(): Promise<void> {
-    try {
-      this.gameData = await sudokuApi.getSudokuGame()
-      this.isFirstTimeUser = false
-      console.log('Game loaded from server:', this.gameData)
-    } catch (error) {
-      console.error('Error loading game from server:', error)
-      throw error // Re-throw so init knows this is a first time user
-    }
-  }
-
   // Create a new game on the server for first-time users
-  private async createGameOnServer(puzzle: string[][], board: any[], level: string): Promise<void> {
+  private async createGameOnServer(data: SudokuGameData): Promise<void> {
     try {
-      this.gameData = await sudokuApi.createSudokuGame({
-        puzzle,
-        board,
-        level
-      })
-      this.isFirstTimeUser = false
+      this.gameData = await sudokuApi.createSudokuGame(data)
       console.log('Game created on server:', this.gameData)
     } catch (error) {
       console.error('Error creating game on server:', error)
@@ -183,37 +189,25 @@ export class SudokuGame implements Game {
   }
 
   // Update the game on the server (used by debounce and reset)
-  private async updateGameToServer(puzzle: string[][], level: string): Promise<void> {
+  private async updateGameToServer(data: Partial<SudokuGameData>): Promise<void> {
     try {
-      this.gameData = await sudokuApi.updateSudokuGame({
-        puzzle,
-        level
-      })
+      this.gameData = await sudokuApi.updateSudokuGame(data)
       console.log('Game updated on server:', this.gameData)
     } catch (error) {
       console.error('Error updating game on server:', error)
     }
   }
 
-  // Get the current state of the puzzle from the UI
-  private getCurrentPuzzleState(): string[][] {
+  // Get the current state of the puzzle (base puzzle + current inputs)
+  private getProgressPuzzle(basePuzzle: number[][]): number[][] {
     const inputValues = getAllInput()
-    // Get the original puzzle from gameData or localStorage
-    let currentPuzzle: string[][] = []
+    const currentPuzzle: number[][] = JSON.parse(JSON.stringify(basePuzzle))
 
-    if (this.gameData?.puzzle) {
-      currentPuzzle = JSON.parse(JSON.stringify(this.gameData.puzzle)) // Deep copy
-    } else {
-      // If no gameData, initialize an empty 9x9 grid
-      currentPuzzle = Array(9).fill(0).map(() => Array(9).fill(''))
-    }
-
-    // Update with current input values
     for (const [key, value] of Object.entries(inputValues)) {
       const [row, col] = key.split('-').map(Number)
-      if (currentPuzzle[row] && typeof currentPuzzle[row][col] !== 'undefined') {
-        currentPuzzle[row][col] = value || ''
-      }
+      if (!currentPuzzle[row] || typeof currentPuzzle[row][col] === 'undefined') continue
+      const n = value ? Number(value) : 0
+      currentPuzzle[row][col] = Number.isFinite(n) ? n : 0
     }
 
     return currentPuzzle

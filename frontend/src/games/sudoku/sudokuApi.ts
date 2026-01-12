@@ -3,8 +3,8 @@ import { api } from '@/utilities/api';
 export interface SudokuGameData {
   id?: string;
   userId?: string;
-  puzzle?: string[][];
-  board?: string[][];
+  puzzle?: number[][];
+  board?: number[][];
   level?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -13,7 +13,17 @@ export interface SudokuGameData {
 export const sudokuApi = {
   // Get the current sudoku game for the user
   getSudokuGame: async (): Promise<SudokuGameData> => {
-    return api.get<SudokuGameData>('/sudoku-game');
+    try {
+      return await api.get<SudokuGameData>('/sudoku-game');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.toLowerCase().includes('not found') || message.includes('404')) {
+        const notFoundError = new Error(message);
+        notFoundError.name = 'NotFoundError';
+        throw notFoundError;
+      }
+      throw error;
+    }
   },
 
   // Create a new sudoku game (for first-time users)

@@ -54,10 +54,11 @@ export const updateSudokuGame = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
 
-    const { puzzle, level  } = req.body;
+    const { puzzle, board, level  } = req.body;
 
     const updateData: Record<string, unknown> = {};
     if (puzzle !== undefined) updateData.puzzle = puzzle;
+    if (board !== undefined) updateData.board = board;
     if (level !== undefined) updateData.level = level;
 
     const sudokuGame = await prisma.sudokuGame.update({
