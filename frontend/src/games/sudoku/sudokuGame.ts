@@ -15,7 +15,10 @@ export class SudokuGame implements Game {
   private container: HTMLElement | null = null
   private sudokuWrap: HTMLElement | null = null
   private gameData: SudokuGameData | null = null
-  private basePuzzle: number[][] | null = null
+  private basePuzzle?: number[][]
+
+  // TODO: 已知 bug
+  // 1. 重新拿到 puzzle 時沒辦法區分 input 還是題目本身
 
   private onCellChange = () => {
     this.debouncedUpdateGame()
@@ -27,7 +30,11 @@ export class SudokuGame implements Game {
     const basePuzzle = this.basePuzzle
     if (!basePuzzle) return
     const progressPuzzle = this.getProgressPuzzle(basePuzzle)
-    this.updateGameToServer({ puzzle: progressPuzzle, level })
+    this.updateGameToServer({
+      puzzle: progressPuzzle,
+      initialPuzzle: this.basePuzzle,
+      level,
+    })
   }, UPDATE_GAME_DEBOUNCE_TIME)
 
   async init(rootElement: HTMLElement): Promise<void> {
@@ -65,16 +72,29 @@ export class SudokuGame implements Game {
       board = generated.board
       this.basePuzzle = puzzle
 
-      this.createGameOnServer({ puzzle, board, level })
+      this.createGameOnServer({ puzzle, initialPuzzle: puzzle, board, level })
     } else {
-      // 2) If GET returns puzzle/board => use server data directly; do NOT generate
-      puzzle = serverGame.puzzle ?? []
+      const initial = serverGame.initialPuzzle || [];
+      const current = serverGame.puzzle || [];
+
+      // 還原使用者輸入到 localStorage
+      this.clearSudokuStorage();
+      for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+          // 如果初始是空格但現在有值，表示是使用者的輸入
+          if (initial[r][c] === 0 && current[r][c] !== 0) {
+            localStorage.setItem(`input-${r}-${c}`, String(current[r][c]));
+          }
+        }
+      }
+
+      puzzle = initial
       board = serverGame.board ?? []
       localStorage.setItem('puzzle', JSON.stringify(puzzle))
       localStorage.setItem('board', JSON.stringify(board))
       localStorage.setItem('level', serverGame.level || level)
 
-      this.basePuzzle = puzzle
+      this.basePuzzle = initial;
     }
 
     this.sudokuWrap.appendChild(

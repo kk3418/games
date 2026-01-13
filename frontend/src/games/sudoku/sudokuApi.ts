@@ -4,6 +4,7 @@ export interface SudokuGameData {
   id?: string;
   userId?: string;
   puzzle?: number[][];
+  initialPuzzle?: number[][];
   board?: number[][];
   level?: string;
   createdAt?: Date;

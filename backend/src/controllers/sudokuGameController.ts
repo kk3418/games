@@ -24,7 +24,7 @@ export const getSudokuGame = async (req: Request, res: Response) => {
 export const createSudokuGame = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
-    const { puzzle, board, level } = req.body;
+    const { puzzle, initialPuzzle, board, level } = req.body;
 
     const existingRecord = await prisma.sudokuGame.findUnique({
       where: { userId },
@@ -38,6 +38,7 @@ export const createSudokuGame = async (req: Request, res: Response) => {
       data: {
         userId,
         puzzle,
+        initialPuzzle,
         board,
         level,
       },
@@ -54,10 +55,11 @@ export const updateSudokuGame = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
 
-    const { puzzle, board, level  } = req.body;
+    const { puzzle, initialPuzzle, board, level  } = req.body;
 
     const updateData: Record<string, unknown> = {};
     if (puzzle !== undefined) updateData.puzzle = puzzle;
+    if (initialPuzzle !== undefined) updateData.initialPuzzle = initialPuzzle;
     if (board !== undefined) updateData.board = board;
     if (level !== undefined) updateData.level = level;
 

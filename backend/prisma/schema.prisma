@@ -43,6 +43,7 @@ model SudokuGame {
   level     String
   userId    Int      @unique
   user      User     @relation(fields: [userId], references: [id])
+  initialPuzzle Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
