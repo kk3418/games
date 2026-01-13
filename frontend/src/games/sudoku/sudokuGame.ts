@@ -18,7 +18,6 @@ export class SudokuGame implements Game {
   private basePuzzle?: number[][]
 
   // TODO: 已知 bug
-  // 1. 重新拿到 puzzle 時沒辦法區分 input 還是題目本身
 
   private onCellChange = () => {
     this.debouncedUpdateGame()
@@ -135,6 +134,7 @@ export class SudokuGame implements Game {
   private clearSudokuStorage(): void {
     localStorage.removeItem('puzzle')
     localStorage.removeItem('board')
+    localStorage.removeItem('initialPuzzle')
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const k = localStorage.key(i)
       if (k && k.startsWith('input-')) {
@@ -151,6 +151,8 @@ export class SudokuGame implements Game {
 
     // Save the board for validation
     localStorage.setItem('board', JSON.stringify(board))
+    localStorage.setItem('initialPuzzle', JSON.stringify(puzzle))
+    localStorage.setItem('puzzle', JSON.stringify(puzzle))
     localStorage.setItem('level', level)
     this.basePuzzle = puzzle
 
@@ -161,7 +163,7 @@ export class SudokuGame implements Game {
     )
 
     // Update the game on server
-    this.updateGameToServer({ puzzle, board, level })
+    this.updateGameToServer({ puzzle, initialPuzzle: puzzle, board, level })
   }
 
   private checkSolution() {
@@ -170,7 +172,7 @@ export class SudokuGame implements Game {
     const inputValue = getAllInput()
     const boardStorage = JSON.parse(localStorage.getItem('board') ?? '[]')
 
-    if (Object.keys(inputValue)) {
+    if (Object.keys(inputValue).length === 0) {
       showEndGameModal({
         title: 'Not yet',
         message: 'Something wrong :(',
