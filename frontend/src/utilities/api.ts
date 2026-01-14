@@ -57,9 +57,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
     if (response.status === 401 || response.status === 403) {
       console.warn('Authentication error detected. Token may be invalid or expired.');
-      // Uncomment to automatically clear token on auth errors:
-      // localStorage.removeItem('token');
-      // localStorage.removeItem('user');
+      window.dispatchEvent(new CustomEvent('auth:expired'));
     }
 
     let errorData;

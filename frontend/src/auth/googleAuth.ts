@@ -121,7 +121,7 @@ export class GoogleAuth {
     }
   }
 
-  private handleLogout() {
+  public handleLogout() {
     this.currentUser = null;
     this.clearAppStorage();
     this.render();

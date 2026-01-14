@@ -119,6 +119,10 @@ window.addEventListener('load', () => {
     })
   })
 
+  window.addEventListener('auth:expired', () => {
+    auth.handleLogout()
+  })
+
   if (auth.isAuthenticated()) {
     initGames()
     return
