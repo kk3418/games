@@ -1,5 +1,7 @@
 import '@/games/snake/snake.css'
 import type { Game } from '@/types/game'
+import { getSnakeGame, updateSnakeGame } from './snakeApi'
+import { debounce } from '@/utilities/debounce'
 
 interface Point {
   x: number
@@ -36,7 +38,9 @@ export class SnakeGame implements Game {
   private isPaused = false
   private isGameOver = false
 
-  init(rootElement: HTMLElement): void {
+  private debouncedUpdateGame = debounce(this.saveGameState.bind(this), 1000)
+
+  async init(rootElement: HTMLElement): Promise<void> {
     this.container = document.createElement('div')
     this.container.className = 'snake-container'
 
@@ -49,7 +53,7 @@ export class SnakeGame implements Game {
     scoreBoard.className = 'snake-score-board'
     scoreBoard.innerHTML = `
       <span>Score: <span id="snake-score">0</span></span>
-      <span>High: <span id="snake-high-score">${this.getHighScore()}</span></span>
+      <span>High: <span id="snake-high-score">0</span></span>
     `
     header.appendChild(scoreBoard)
 
@@ -77,9 +81,41 @@ export class SnakeGame implements Game {
     // Attach to root
     rootElement.appendChild(this.container)
 
+    // Load game data from backend
+    await this.loadInitialData()
+
     // Start Game
     this.resetGame()
     document.addEventListener('keydown', this.handleKeyInput)
+  }
+
+  private async loadInitialData() {
+    try {
+      const gameData = await getSnakeGame()
+      this.highScore = gameData.highestScore || 0
+      this.difficulty = gameData.level || 'medium'
+      
+      // Could potentially resume game from here
+      // For now, we'll just use high score and difficulty
+      
+      this.updateHighScoreDisplay()
+      
+      const select = this.container?.querySelector('.snake-difficulty-select') as HTMLSelectElement
+      if (select) {
+        select.value = this.difficulty
+        this.gameSpeed = this.speeds[this.difficulty as keyof typeof this.speeds]
+      }
+      
+    } catch (error) {
+      console.error('Failed to load snake game data:', error)
+      // Use local high score as fallback? For now, we'll just start fresh.
+      this.highScore = 0
+    }
+  }
+  
+  private updateHighScoreDisplay() {
+    const highScoreEl = document.getElementById('snake-high-score')
+    if (highScoreEl) highScoreEl.textContent = this.highScore.toString()
   }
 
   destroy(): void {
@@ -117,26 +153,20 @@ export class SnakeGame implements Game {
       select.appendChild(option)
     })
 
-    // Load saved difficulty
-    const savedDifficulty = localStorage.getItem('snake-difficulty')
-    if (savedDifficulty && savedDifficulty in this.speeds) {
-      this.difficulty = savedDifficulty
-    }
     select.value = this.difficulty
     this.gameSpeed = this.speeds[this.difficulty as keyof typeof this.speeds]
 
     select.addEventListener('change', () => {
       this.difficulty = select.value
-      localStorage.setItem('snake-difficulty', this.difficulty)
       this.gameSpeed = this.speeds[this.difficulty as keyof typeof this.speeds]
+      
+      updateSnakeGame({ level: this.difficulty })
 
-      // If game is running, restart timer with new speed
       if (this.gameInterval && !this.isPaused && !this.isGameOver) {
         clearInterval(this.gameInterval)
         this.gameInterval = window.setInterval(() => this.gameLoop(), this.gameSpeed)
       }
 
-      // Remove focus so arrow keys work for game immediately
       select.blur()
     })
 
@@ -169,13 +199,11 @@ export class SnakeGame implements Game {
           this.resetGame()
         } else {
           this.isPaused = !this.isPaused
-          // Force a redraw to show/hide pause menu immediately
           this.draw()
         }
         break
     }
 
-    // Start game on first move if stationary
     if (this.velocity.x === 0 && this.velocity.y === 0 &&
        (this.nextVelocity.x !== 0 || this.nextVelocity.y !== 0) &&
        !this.isGameOver && !this.isPaused) {
@@ -196,7 +224,6 @@ export class SnakeGame implements Game {
     if (this.gameInterval) clearInterval(this.gameInterval)
     this.gameInterval = window.setInterval(() => this.gameLoop(), this.gameSpeed)
 
-    // Initial draw
     requestAnimationFrame(() => this.draw())
   }
 
@@ -207,7 +234,6 @@ export class SnakeGame implements Game {
         x: Math.floor(Math.random() * this.tileCount),
         y: Math.floor(Math.random() * this.tileCount)
       }
-      // Check if food spawns on snake
       const onSnake = this.snake.some(segment => segment.x === newFood.x && segment.y === newFood.y)
       if (!onSnake) break
     }
@@ -216,8 +242,6 @@ export class SnakeGame implements Game {
 
   private gameLoop() {
     if (this.isPaused || this.isGameOver) {
-      // Still draw to show pause/gameover screens
-      // But don't update
       return
     }
 
@@ -226,7 +250,6 @@ export class SnakeGame implements Game {
   }
 
   private update() {
-    // Apply next velocity (prevents multiple direction changes in one tick)
     this.velocity = this.nextVelocity
 
     if (this.velocity.x === 0 && this.velocity.y === 0) return
@@ -235,13 +258,11 @@ export class SnakeGame implements Game {
     head.x += this.velocity.x
     head.y += this.velocity.y
 
-    // Wall Collision
     if (head.x < 0 || head.x >= this.tileCount || head.y < 0 || head.y >= this.tileCount) {
       this.gameOver()
       return
     }
 
-    // Self Collision
     if (this.snake.some(segment => segment.x === head.x && segment.y === head.y)) {
       this.gameOver()
       return
@@ -249,7 +270,6 @@ export class SnakeGame implements Game {
 
     this.snake.unshift(head)
 
-    // Eat Food
     if (head.x === this.food.x && head.y === this.food.y) {
       this.score += 10
       this.updateScore()
@@ -257,16 +277,29 @@ export class SnakeGame implements Game {
     } else {
       this.snake.pop()
     }
+
+    this.debouncedUpdateGame()
+  }
+  
+  private async saveGameState() {
+    try {
+      await updateSnakeGame({
+        currentScore: this.score,
+        snakePosition: this.snake,
+        foodPosition: this.food,
+        level: this.difficulty,
+      })
+    } catch (error) {
+      console.error('Failed to save game state:', error)
+    }
   }
 
   private draw() {
     if (!this.ctx || !this.canvas) return
 
-    // Clear background
     this.ctx.fillStyle = '#222'
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
-    // Draw Food
     this.ctx.fillStyle = '#ff4444'
     this.ctx.beginPath()
     const foodX = this.food.x * this.gridSize + 1
@@ -275,9 +308,7 @@ export class SnakeGame implements Game {
     this.ctx.roundRect(foodX, foodY, size, size, 4)
     this.ctx.fill()
 
-    // Draw Snake
     this.snake.forEach((segment, index) => {
-      // Head is slightly different color
       if (index === 0) this.ctx!.fillStyle = '#66ff66'
       else this.ctx!.fillStyle = '#44ff44'
 
@@ -290,7 +321,6 @@ export class SnakeGame implements Game {
       this.ctx!.fill()
     })
 
-    // Game Over / Pause Overlay
     if (this.isGameOver) {
       this.ctx.fillStyle = 'rgba(0,0,0,0.7)'
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
@@ -319,22 +349,31 @@ export class SnakeGame implements Game {
 
     if (this.score > this.highScore) {
       this.highScore = this.score
-      this.saveHighScore()
-      const highScoreEl = document.getElementById('snake-high-score')
-      if (highScoreEl) highScoreEl.textContent = this.highScore.toString()
+      this.updateHighScoreDisplay()
     }
   }
 
-  private gameOver() {
+  private async gameOver() {
     this.isGameOver = true
-    this.draw() // Draw game over screen immediately
-  }
+    if (this.gameInterval) {
+      clearInterval(this.gameInterval)
+      this.gameInterval = null
+    }
+    
+    try {
+        const finalState = await updateSnakeGame({
+            currentScore: this.score,
+            snakePosition: this.snake,
+            foodPosition: this.food,
+        });
+        if (finalState.highestScore && finalState.highestScore > this.highScore) {
+            this.highScore = finalState.highestScore;
+            this.updateHighScoreDisplay();
+        }
+    } catch (error) {
+        console.error('Failed to update score on game over:', error);
+    }
 
-  private getHighScore(): number {
-    return parseInt(localStorage.getItem('snake-highscore') || '0', 10)
-  }
-
-  private saveHighScore() {
-    localStorage.setItem('snake-highscore', this.highScore.toString())
+    this.draw()
   }
 }
