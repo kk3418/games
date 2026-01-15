@@ -38,7 +38,7 @@ export class SnakeGame implements Game {
   private isPaused = false
   private isGameOver = false
 
-  private debouncedUpdateGame = debounce(this.saveGameState.bind(this), 1000)
+  private debouncedUpdateGame = debounce(this.saveGameState.bind(this), 500)
 
   async init(rootElement: HTMLElement): Promise<void> {
     this.container = document.createElement('div')
@@ -217,7 +217,7 @@ export class SnakeGame implements Game {
   }
 
   private resetGame() {
-    this.snake = [{ x: 10, y: 10 }]
+    this.snake ??= [{ x: 10, y: 10 }]
     this.velocity = { x: 0, y: 0 }
     this.nextVelocity = { x: 0, y: 0 }
     this.score = 0
