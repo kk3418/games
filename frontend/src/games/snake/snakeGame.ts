@@ -94,25 +94,30 @@ export class SnakeGame implements Game {
       const gameData = await getSnakeGame()
       this.highScore = gameData.highestScore || 0
       this.difficulty = gameData.level || 'medium'
-      
-      // Could potentially resume game from here
-      // For now, we'll just use high score and difficulty
-      
+
+      // Load game state if available
+      if (gameData.snakePosition && gameData.snakePosition.length > 0 && gameData.foodPosition) {
+        this.snake = gameData.snakePosition
+        this.food = gameData.foodPosition
+        this.score = gameData.currentScore || 0
+      }
+
       this.updateHighScoreDisplay()
-      
+      this.updateScore() // Update score display in case it was loaded
+
       const select = this.container?.querySelector('.snake-difficulty-select') as HTMLSelectElement
       if (select) {
         select.value = this.difficulty
         this.gameSpeed = this.speeds[this.difficulty as keyof typeof this.speeds]
       }
-      
+
     } catch (error) {
       console.error('Failed to load snake game data:', error)
       // Use local high score as fallback? For now, we'll just start fresh.
       this.highScore = 0
     }
   }
-  
+
   private updateHighScoreDisplay() {
     const highScoreEl = document.getElementById('snake-high-score')
     if (highScoreEl) highScoreEl.textContent = this.highScore.toString()
@@ -159,7 +164,7 @@ export class SnakeGame implements Game {
     select.addEventListener('change', () => {
       this.difficulty = select.value
       this.gameSpeed = this.speeds[this.difficulty as keyof typeof this.speeds]
-      
+
       updateSnakeGame({ level: this.difficulty })
 
       if (this.gameInterval && !this.isPaused && !this.isGameOver) {
@@ -260,11 +265,13 @@ export class SnakeGame implements Game {
 
     if (head.x < 0 || head.x >= this.tileCount || head.y < 0 || head.y >= this.tileCount) {
       this.gameOver()
+      this.debouncedUpdateGame()
       return
     }
 
     if (this.snake.some(segment => segment.x === head.x && segment.y === head.y)) {
       this.gameOver()
+      this.debouncedUpdateGame()
       return
     }
 
@@ -280,7 +287,7 @@ export class SnakeGame implements Game {
 
     this.debouncedUpdateGame()
   }
-  
+
   private async saveGameState() {
     try {
       await updateSnakeGame({
@@ -359,12 +366,13 @@ export class SnakeGame implements Game {
       clearInterval(this.gameInterval)
       this.gameInterval = null
     }
-    
+
     try {
         const finalState = await updateSnakeGame({
             currentScore: this.score,
             snakePosition: this.snake,
             foodPosition: this.food,
+            level: this.difficulty,
         });
         if (finalState.highestScore && finalState.highestScore > this.highScore) {
             this.highScore = finalState.highestScore;
