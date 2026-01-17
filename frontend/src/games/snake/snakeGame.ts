@@ -96,7 +96,7 @@ export class SnakeGame implements Game {
       this.difficulty = gameData.level || 'medium'
 
       // Load game state if available
-      if (gameData.snakePosition && gameData.snakePosition.length > 0 && gameData.foodPosition) {
+      if (gameData && gameData.snakePosition?.length > 0 && gameData.foodPosition) {
         this.snake = gameData.snakePosition
         this.food = gameData.foodPosition
         this.score = gameData.currentScore || 0
@@ -204,20 +204,21 @@ export class SnakeGame implements Game {
           this.resetGame()
         } else {
           this.isPaused = !this.isPaused
+          this.isPaused === true && this.debouncedUpdateGame()
           this.draw()
         }
         break
     }
 
     if (this.velocity.x === 0 && this.velocity.y === 0 &&
-       (this.nextVelocity.x !== 0 || this.nextVelocity.y !== 0) &&
-       !this.isGameOver && !this.isPaused) {
+      (this.nextVelocity.x !== 0 || this.nextVelocity.y !== 0) &&
+      !this.isGameOver && !this.isPaused) {
       this.velocity = this.nextVelocity
     }
   }
 
   private resetGame() {
-    this.snake ??= [{ x: 10, y: 10 }]
+    this.snake = [{ x: 10, y: 10 }]
     this.velocity = { x: 0, y: 0 }
     this.nextVelocity = { x: 0, y: 0 }
     this.score = 0
@@ -246,7 +247,7 @@ export class SnakeGame implements Game {
   }
 
   private gameLoop() {
-    if (this.isPaused || this.isGameOver) {
+    if (this.isPaused) {
       return
     }
 
@@ -265,13 +266,11 @@ export class SnakeGame implements Game {
 
     if (head.x < 0 || head.x >= this.tileCount || head.y < 0 || head.y >= this.tileCount) {
       this.gameOver()
-      this.debouncedUpdateGame()
       return
     }
 
     if (this.snake.some(segment => segment.x === head.x && segment.y === head.y)) {
       this.gameOver()
-      this.debouncedUpdateGame()
       return
     }
 
@@ -284,8 +283,6 @@ export class SnakeGame implements Game {
     } else {
       this.snake.pop()
     }
-
-    this.debouncedUpdateGame()
   }
 
   private async saveGameState() {
@@ -369,14 +366,14 @@ export class SnakeGame implements Game {
 
     try {
         const finalState = await updateSnakeGame({
-            currentScore: this.score,
-            snakePosition: this.snake,
-            foodPosition: this.food,
-            level: this.difficulty,
+          currentScore: this.score,
+          snakePosition: [],
+          foodPosition: this.food,
         });
+        console.log('finalState: ', finalState)
         if (finalState.highestScore && finalState.highestScore > this.highScore) {
-            this.highScore = finalState.highestScore;
-            this.updateHighScoreDisplay();
+          this.highScore = finalState.highestScore;
+          this.updateHighScoreDisplay();
         }
     } catch (error) {
         console.error('Failed to update score on game over:', error);
