@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "format": "prettier --write \"src/**/*.ts\"",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "prettier": "^3.8.0",
     "typescript": "~5.9.3",
     "vite": "^7.2.6"
   },
