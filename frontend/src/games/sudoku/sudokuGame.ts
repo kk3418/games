@@ -5,6 +5,7 @@ import { getAllInput } from '@/games/sudoku/getStorageInput'
 import { showEndGameModal } from '@/games/sudoku/endGameModal'
 import type { Game } from '@/types/game'
 import { sudokuApi, type SudokuGameData } from '@/games/sudoku/sudokuApi'
+import { sudokuHistoryApi } from '@/games/sudokuHistory/sudokuHistoryApi'
 import { debounce } from '@/utilities/debounce'
 
 const UPDATE_GAME_DEBOUNCE_TIME = 1000
@@ -165,6 +166,20 @@ export class SudokuGame implements Game {
 
     // Update the game on server
     this.updateGameToServer({ puzzle, initialPuzzle: puzzle, board, level })
+    // Track new puzzle as in-progress
+    this.logHistory(false)
+  }
+
+  private logHistory(isComplete: boolean) {
+    const level = localStorage.getItem('level') ?? this.gameData?.level ?? 'medium'
+    const puzzle = this.basePuzzle || JSON.parse(localStorage.getItem('puzzle') ?? '[]')
+    const board = JSON.parse(localStorage.getItem('board') ?? '[]')
+
+    if (!puzzle || !board) return
+
+    sudokuHistoryApi
+      .createHistory({ puzzle, board, level, isComplete })
+      .catch((err) => console.error('Failed to log sudoku history', err))
   }
 
   private checkSolution() {
@@ -195,6 +210,10 @@ export class SudokuGame implements Game {
     }
 
     const lastGameLevel = localStorage.getItem('level') ?? ''
+
+    // Record completed game
+    this.logHistory(true)
+
     showEndGameModal({
       title: 'Congratulations!',
       message: 'You solved the puzzle correctly!',

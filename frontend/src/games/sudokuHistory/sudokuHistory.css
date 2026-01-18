@@ -1,0 +1,158 @@
+.history-page {
+  padding: 1.25rem;
+  max-width: 960px;
+  margin: 0 auto;
+  color: #2b2d42;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.history-title {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: -0.02em;
+}
+
+.history-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.history-btn {
+  border: none;
+  background: #0d6efd;
+  color: #fff;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: 0 10px 30px rgba(13, 110, 253, 0.15);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.history-btn.secondary {
+  background: #e9ecef;
+  color: #343a40;
+  box-shadow: none;
+}
+
+.history-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px rgba(13, 110, 253, 0.2);
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.history-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.25rem;
+  border: 1px solid #eef1f5;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Sudoku grid (copied from sudoku.css for now; candidate for sharing later) */
+.history-sudoku-grid {
+  --history-cell-size: clamp(2rem, calc((100% - 4px) / 9), 3rem);
+  border-collapse: collapse;
+  table-layout: fixed;
+  border: 2px solid #000;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+}
+
+.history-sudoku-grid td {
+  border: 1px solid #ccc;
+  width: var(--history-cell-size);
+  height: var(--history-cell-size);
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 1.1rem;
+}
+
+.history-sudoku-grid tr:nth-child(3n) td {
+  border-bottom: 2px solid #000;
+}
+
+.history-sudoku-grid td:nth-child(3n) {
+  border-right: 2px solid #000;
+}
+
+.history-cell-given {
+  background: #f5f5f5;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.history-cell-empty {
+  color: #c4c4c4;
+}
+
+.history-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 700;
+  color: #0d6efd;
+  margin-bottom: 0.35rem;
+}
+
+.history-meta {
+  font-size: 1rem;
+  color: #4b5563;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.35rem;
+}
+
+.history-status {
+  display: block;
+  font-size: 1rem;
+  color: #2563eb;
+  margin-bottom: 0.35rem;
+}
+
+.history-empty,
+.history-error {
+  padding: 1.25rem;
+  border-radius: 14px;
+  border: 1px dashed #ced4da;
+  background: #f8f9fa;
+  color: #495057;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .history-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .history-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .history-btn {
+    width: auto;
+  }
+}

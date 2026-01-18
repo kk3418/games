@@ -20,6 +20,7 @@ model User {
   updatedAt DateTime @updatedAt
   snakeGame SnakeGame?
   sudokuGame SudokuGame?
+  sudokuHistories SudoKuHistory[]
 }
 
 model SnakeGame {
@@ -46,4 +47,16 @@ model SudokuGame {
   initialPuzzle Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model SudoKuHistory {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  puzzle     Json
+  board      Json
+  level      String
+  isComplete Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

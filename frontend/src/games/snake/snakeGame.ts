@@ -221,7 +221,9 @@ export class SnakeGame implements Game {
   }
 
   private resetGame() {
-    this.snake = [{ x: 10, y: 10 }]
+    if (this.snake.length === 0) {
+      this.snake = [{ x: 10, y: 10 }] // Default snake position
+    }
     this.velocity = { x: 0, y: 0 }
     this.nextVelocity = { x: 0, y: 0 }
     this.score = 0
