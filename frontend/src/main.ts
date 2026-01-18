@@ -24,10 +24,7 @@ const initGames = () => {
 
   if (!gameList || !contentDiv) return
 
-  const games: Game[] = [
-    new SudokuGame(),
-    new SnakeGame(),
-  ]
+  const games: Game[] = [new SudokuGame(), new SnakeGame()]
 
   const switchGame = (game: Game) => {
     if (activeGame === game) return
@@ -40,7 +37,7 @@ const initGames = () => {
     activeGame.init(contentDiv)
 
     // Update active menu item
-    document.querySelectorAll('.game-menu-btn').forEach(btn => {
+    document.querySelectorAll('.game-menu-btn').forEach((btn) => {
       if (btn.getAttribute('data-game-id') === game.id) {
         btn.classList.add('active')
       } else {
@@ -56,7 +53,7 @@ const initGames = () => {
 
   const handleRouting = () => {
     const hash = window.location.hash.slice(1) // remove '#'
-    const targetGame = games.find(g => g.id === hash) || games[0]
+    const targetGame = games.find((g) => g.id === hash) || games[0]
 
     if (targetGame) {
       switchGame(targetGame)
@@ -74,7 +71,7 @@ const initGames = () => {
     handleRouting()
   }
 
-  games.forEach(game => {
+  games.forEach((game) => {
     const item = document.createElement('li')
     const button = document.createElement('button')
     button.textContent = game.name
@@ -100,7 +97,7 @@ window.addEventListener('load', () => {
     }
 
     if (contentDiv) contentDiv.innerHTML = ''
-    document.querySelectorAll('.game-menu-btn').forEach(btn => btn.classList.remove('active'))
+    document.querySelectorAll('.game-menu-btn').forEach((btn) => btn.classList.remove('active'))
 
     if (sideMenu && sideMenu.classList.contains('open')) {
       sideMenu.classList.remove('open')
@@ -147,10 +144,12 @@ if (menuToggle && sideMenu) {
 
   // Close menu when clicking outside on mobile
   document.addEventListener('click', (e) => {
-    if (window.innerWidth <= 768 &&
-        sideMenu.classList.contains('open') &&
-        !sideMenu.contains(e.target as Node) &&
-        !menuToggle.contains(e.target as Node)) {
+    if (
+      window.innerWidth <= 768 &&
+      sideMenu.classList.contains('open') &&
+      !sideMenu.contains(e.target as Node) &&
+      !menuToggle.contains(e.target as Node)
+    ) {
       sideMenu.classList.remove('open')
     }
   })

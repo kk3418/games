@@ -6,13 +6,13 @@ export default function generateEmptyIndex(level: string): number[] {
   switch (level) {
     case 'easy':
       numberOfEmpty = 30
-      break;
+      break
     case 'medium':
       numberOfEmpty = 40
-      break;
+      break
     case 'hard':
       numberOfEmpty = 50
-      break;
+      break
     default:
       numberOfEmpty = 30
   }
@@ -21,13 +21,12 @@ export default function generateEmptyIndex(level: string): number[] {
   const emptyIndexes: number[] = []
 
   while (i <= numberOfEmpty) {
-    const newRandomIndex = random(0, 80);
+    const newRandomIndex = random(0, 80)
     if (!emptyIndexes.includes(newRandomIndex)) {
       emptyIndexes.push(newRandomIndex)
       i += 1
     }
   }
-
 
   return emptyIndexes
 }

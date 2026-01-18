@@ -12,9 +12,7 @@ export function setCellValue(input: HTMLInputElement, value: string): void {
   input.focus()
 }
 
-export function createDifficultySelect(
-  onLevelChange: (level: string) => void,
-): HTMLDivElement {
+export function createDifficultySelect(onLevelChange: (level: string) => void): HTMLDivElement {
   const wrap = document.createElement('div')
   wrap.className = 'difficulty'
 
@@ -159,12 +157,7 @@ export function createSudokuTable(
           if (e.ctrlKey || e.metaKey || e.altKey) return
           if (e.isComposing) return
 
-          const directionKeys = new Set([
-            'ArrowLeft',
-            'ArrowRight',
-            'ArrowUp',
-            'ArrowDown',
-          ])
+          const directionKeys = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'])
 
           if (directionKeys.has(e.key)) {
             e.preventDefault()

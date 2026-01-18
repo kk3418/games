@@ -2,7 +2,7 @@ import shuffleArray from '@/utilities/shuffleArray'
 import generateEmptyIndex from '@/games/sudoku/generateEmptyIndex'
 import { clone2DArray } from '@/utilities/copyUtilities'
 
-function generateSudoku (level: string) {
+function generateSudoku(level: string) {
   const puzzleStorage = JSON.parse(localStorage.getItem('puzzle') ?? '[]')
   const boardStorage = JSON.parse(localStorage.getItem('board') ?? '[]')
 
@@ -16,11 +16,15 @@ function generateSudoku (level: string) {
 
   const board = Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => 0))
 
-  function isValid (num: number, r: number, c: number) {
-    return !(rows[r][num - 1] || cols[c][num - 1] || boxes[Math.floor(r / 3) * 3 + Math.floor(c / 3)][num - 1])
+  function isValid(num: number, r: number, c: number) {
+    return !(
+      rows[r][num - 1] ||
+      cols[c][num - 1] ||
+      boxes[Math.floor(r / 3) * 3 + Math.floor(c / 3)][num - 1]
+    )
   }
 
-  function markUsed (num: number, r: number, c: number, used: boolean) {
+  function markUsed(num: number, r: number, c: number, used: boolean) {
     rows[r][num - 1] = used
     cols[c][num - 1] = used
     boxes[Math.floor(r / 3) * 3 + Math.floor(c / 3)][num - 1] = used
@@ -101,12 +105,12 @@ function generateSudoku (level: string) {
   do {
     puzzle = clone2DArray(board)
     solution = 0
-    rows.forEach(row => row.fill(false))
-    cols.forEach(col => col.fill(false))
-    boxes.forEach(box => box.fill(false))
+    rows.forEach((row) => row.fill(false))
+    cols.forEach((col) => col.fill(false))
+    boxes.forEach((box) => box.fill(false))
 
     const emptyIndex = generateEmptyIndex(level)
-    emptyIndex.forEach(index => {
+    emptyIndex.forEach((index) => {
       const row = Math.floor(index / 9)
       const col = index % 9
       puzzle[row][col] = 0

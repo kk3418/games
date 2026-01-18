@@ -24,7 +24,7 @@ export class SnakeGame implements Game {
   private readonly speeds = {
     easy: 150,
     medium: 100,
-    hard: 60
+    hard: 60,
   }
 
   // Game state
@@ -110,7 +110,6 @@ export class SnakeGame implements Game {
         select.value = this.difficulty
         this.gameSpeed = this.speeds[this.difficulty as keyof typeof this.speeds]
       }
-
     } catch (error) {
       console.error('Failed to load snake game data:', error)
       // Use local high score as fallback? For now, we'll just start fresh.
@@ -148,10 +147,10 @@ export class SnakeGame implements Game {
     const options = [
       { value: 'easy', text: 'Slow' },
       { value: 'medium', text: 'Normal' },
-      { value: 'hard', text: 'Fast' }
+      { value: 'hard', text: 'Fast' },
     ]
 
-    options.forEach(opt => {
+    options.forEach((opt) => {
       const option = document.createElement('option')
       option.value = opt.value
       option.textContent = opt.text
@@ -210,9 +209,13 @@ export class SnakeGame implements Game {
         break
     }
 
-    if (this.velocity.x === 0 && this.velocity.y === 0 &&
+    if (
+      this.velocity.x === 0 &&
+      this.velocity.y === 0 &&
       (this.nextVelocity.x !== 0 || this.nextVelocity.y !== 0) &&
-      !this.isGameOver && !this.isPaused) {
+      !this.isGameOver &&
+      !this.isPaused
+    ) {
       this.velocity = this.nextVelocity
     }
   }
@@ -238,9 +241,11 @@ export class SnakeGame implements Game {
     while (true) {
       newFood = {
         x: Math.floor(Math.random() * this.tileCount),
-        y: Math.floor(Math.random() * this.tileCount)
+        y: Math.floor(Math.random() * this.tileCount),
       }
-      const onSnake = this.snake.some(segment => segment.x === newFood.x && segment.y === newFood.y)
+      const onSnake = this.snake.some(
+        (segment) => segment.x === newFood.x && segment.y === newFood.y,
+      )
       if (!onSnake) break
     }
     this.food = newFood
@@ -269,7 +274,7 @@ export class SnakeGame implements Game {
       return
     }
 
-    if (this.snake.some(segment => segment.x === head.x && segment.y === head.y)) {
+    if (this.snake.some((segment) => segment.x === head.x && segment.y === head.y)) {
       this.gameOver()
       return
     }
@@ -335,7 +340,11 @@ export class SnakeGame implements Game {
       this.ctx.fillText('Game Over', this.canvas.width / 2, this.canvas.height / 2 - 20)
 
       this.ctx.font = '16px Arial'
-      this.ctx.fillText('Press Space to Restart', this.canvas.width / 2, this.canvas.height / 2 + 20)
+      this.ctx.fillText(
+        'Press Space to Restart',
+        this.canvas.width / 2,
+        this.canvas.height / 2 + 20,
+      )
     } else if (this.isPaused) {
       this.ctx.fillStyle = 'rgba(0,0,0,0.5)'
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
@@ -365,18 +374,18 @@ export class SnakeGame implements Game {
     }
 
     try {
-        const finalState = await updateSnakeGame({
-          currentScore: this.score,
-          snakePosition: [],
-          foodPosition: this.food,
-        });
-        console.log('finalState: ', finalState)
-        if (finalState.highestScore && finalState.highestScore > this.highScore) {
-          this.highScore = finalState.highestScore;
-          this.updateHighScoreDisplay();
-        }
+      const finalState = await updateSnakeGame({
+        currentScore: this.score,
+        snakePosition: [],
+        foodPosition: this.food,
+      })
+      console.log('finalState: ', finalState)
+      if (finalState.highestScore && finalState.highestScore > this.highScore) {
+        this.highScore = finalState.highestScore
+        this.updateHighScoreDisplay()
+      }
     } catch (error) {
-        console.error('Failed to update score on game over:', error);
+      console.error('Failed to update score on game over:', error)
     }
 
     this.draw()

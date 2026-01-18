@@ -53,7 +53,9 @@ function ensureEndGameDialog(): HTMLDialogElement {
   return dialog
 }
 
-export function showEndGameModal<TArgs extends unknown[]>(options: EndGameModalOptions<TArgs>): void {
+export function showEndGameModal<TArgs extends unknown[]>(
+  options: EndGameModalOptions<TArgs>,
+): void {
   const dialog = ensureEndGameDialog()
 
   const titleEl = dialog.querySelector('[data-role="title"]')

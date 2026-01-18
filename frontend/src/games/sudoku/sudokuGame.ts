@@ -73,16 +73,16 @@ export class SudokuGame implements Game {
 
       this.createGameOnServer({ puzzle, initialPuzzle: puzzle, board, level })
     } else {
-      const initial = serverGame.initialPuzzle || [];
-      const current = serverGame.puzzle || [];
+      const initial = serverGame.initialPuzzle || []
+      const current = serverGame.puzzle || []
 
       // 還原使用者輸入到 localStorage
-      this.clearSudokuStorage();
+      this.clearSudokuStorage()
       for (let r = 0; r < 9; r++) {
         for (let c = 0; c < 9; c++) {
           // 如果初始是空格但現在有值，表示是使用者的輸入
           if (initial[r][c] === 0 && current[r][c] !== 0) {
-            localStorage.setItem(`input-${r}-${c}`, String(current[r][c]));
+            localStorage.setItem(`input-${r}-${c}`, String(current[r][c]))
           }
         }
       }
@@ -93,7 +93,7 @@ export class SudokuGame implements Game {
       localStorage.setItem('board', JSON.stringify(board))
       localStorage.setItem('level', serverGame.level || level)
 
-      this.basePuzzle = initial;
+      this.basePuzzle = initial
     }
 
     this.sudokuWrap.appendChild(
@@ -110,12 +110,13 @@ export class SudokuGame implements Game {
 
     const controlsWrap = document.createElement('div')
     controlsWrap.className = 'controls'
-    controlsWrap.appendChild(createKeypad(
-      () => this.activeCellInput,
-      () => this.checkSolution(),
-      () => this.resetGame(localStorage.getItem('level') ?? 'medium'),
-    ))
-
+    controlsWrap.appendChild(
+      createKeypad(
+        () => this.activeCellInput,
+        () => this.checkSolution(),
+        () => this.resetGame(localStorage.getItem('level') ?? 'medium'),
+      ),
+    )
 
     this.container.appendChild(difficultyWrap)
     this.container.appendChild(this.sudokuWrap)
