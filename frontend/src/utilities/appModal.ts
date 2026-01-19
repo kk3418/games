@@ -1,1 +1,1 @@
-export { showAppModal } from '@/component/appModal'
+export { showAppModal } from '@/components/appModal'

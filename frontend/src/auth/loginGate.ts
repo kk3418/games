@@ -1,6 +1,6 @@
 import type { AuthResponse } from '@/types/auth'
 import { api } from '@/utilities/api'
-import { showAppModal } from '@/component/appModal'
+import { showAppModal } from '@/components/appModal'
 import { GoogleAuth } from '@/auth/googleAuth'
 
 type LoginGateOptions = {
