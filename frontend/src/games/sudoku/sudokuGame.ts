@@ -18,8 +18,6 @@ export class SudokuGame implements Game {
   private gameData: SudokuGameData | null = null
   private basePuzzle?: number[][]
 
-  // TODO: 已知 bug
-
   private onCellChange = () => {
     this.debouncedUpdateGame()
   }

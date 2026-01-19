@@ -37,6 +37,7 @@ export class SnakeGame implements Game {
   private gameInterval: number | null = null
   private isPaused = false
   private isGameOver = false
+  private hasSavedState = false
 
   private debouncedUpdateGame = debounce(this.saveGameState.bind(this), 500)
 
@@ -85,7 +86,7 @@ export class SnakeGame implements Game {
     await this.loadInitialData()
 
     // Start Game
-    this.resetGame()
+    this.resetGame({ preserveState: this.hasSavedState })
     document.addEventListener('keydown', this.handleKeyInput)
   }
 
@@ -100,6 +101,7 @@ export class SnakeGame implements Game {
         this.snake = gameData.snakePosition
         this.food = gameData.foodPosition
         this.score = gameData.currentScore || 0
+        this.hasSavedState = true
       }
 
       this.updateHighScoreDisplay()
@@ -220,17 +222,22 @@ export class SnakeGame implements Game {
     }
   }
 
-  private resetGame() {
-    if (this.snake.length === 0) {
+  private resetGame(options?: { preserveState?: boolean }) {
+    const preserveState = options?.preserveState ?? false
+
+    if (!preserveState || this.snake.length === 0) {
       this.snake = [{ x: 10, y: 10 }] // Default snake position
+      this.score = 0
+      this.hasSavedState = false
     }
     this.velocity = { x: 0, y: 0 }
     this.nextVelocity = { x: 0, y: 0 }
-    this.score = 0
     this.isGameOver = false
     this.isPaused = false
     this.updateScore()
-    this.spawnFood()
+    if (!preserveState) {
+      this.spawnFood()
+    }
 
     if (this.gameInterval) clearInterval(this.gameInterval)
     this.gameInterval = window.setInterval(() => this.gameLoop(), this.gameSpeed)
