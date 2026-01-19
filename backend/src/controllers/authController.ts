@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '@/prismaInstance';
 import { OAuth2Client } from 'google-auth-library';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key';
+const secret = process.env.JWT_SECRET || 'super-secret-key';
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const register = async (req: Request, res: Response) => {
@@ -52,7 +52,7 @@ export const login = async (req: Request, res: Response) => {
       return;
     }
 
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user.id, email: user.email }, secret, { expiresIn: '1h' });
     res.json({ token, user: { id: user.id, email: user.email, name: user.name } });
   } catch (error) {
     console.error(error);
@@ -100,7 +100,7 @@ export const googleLogin = async (req: Request, res: Response) => {
       });
     }
 
-    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user.id, email: user.email }, secret, { expiresIn: '1h' });
 
     res.json({
       token: token,
