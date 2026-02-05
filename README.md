@@ -206,8 +206,7 @@ npm run dev
 
 ### Frontend
 
-- **Router 抽象化**：把 hash routing 從 `main.ts` 抽出去，做成 `Router` + `GameRegistry`
-- **資料存取層**：讓 `games/*` 依賴更高層的 `repository` 介面，而不是直接呼叫 `api.*`
+- **Router 抽象化**：把 hash routing 改成 history routing
 - **EventBus 抽象**：將 `window.dispatchEvent` 包成 `eventBus`，讓測試更容易、避免全域事件散落
 - **StorageAdapter**：封裝 localStorage（統一 keys、可替換成 Capacitor Preferences），避免跨模組散落存取
 - **同步狀態與離線策略**：針對 Sudoku 加入 `saving/saved/failed` UI 狀態、retry/queue（建議放在 repository/service）
