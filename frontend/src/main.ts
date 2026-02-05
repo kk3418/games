@@ -1,6 +1,5 @@
 import '@/styles/main.css'
 import { SudokuGame } from '@/games/sudoku/sudokuGame'
-import { SnakeGame } from '@/games/snake/snakeGame'
 import { SudokuHistoryPage } from '@/games/sudokuHistory/sudokuHistoryPage'
 import { GoogleAuth } from '@/auth/googleAuth'
 import { showLoginGate } from '@/auth/loginGate'
@@ -25,7 +24,7 @@ const initGames = () => {
 
   if (!gameList || !contentDiv) return
 
-  const games: Game[] = [new SudokuGame(), new SudokuHistoryPage(), new SnakeGame()]
+  const games: Game[] = [new SudokuGame(), new SudokuHistoryPage()]
 
   const switchGame = (game: Game) => {
     if (activeGame === game) return

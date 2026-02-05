@@ -105,8 +105,6 @@ export class GoogleAuth {
       'puzzle',
       'board',
       'level',
-      'snake-difficulty',
-      'snake-highscore',
     ])
 
     for (const k of keysToRemove) {
@@ -116,7 +114,7 @@ export class GoogleAuth {
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const k = localStorage.key(i)
       if (!k) continue
-      if (k.startsWith('input-') || k.startsWith('snake-')) {
+      if (k.startsWith('input-')) {
         localStorage.removeItem(k)
       }
     }

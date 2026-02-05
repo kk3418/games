@@ -18,24 +18,10 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  snakeGame SnakeGame?
   sudokuGame SudokuGame?
   sudokuHistories SudoKuHistory[]
 }
 
-model SnakeGame {
-  id           Int      @id @default(autoincrement())
-  highestScore Int?
-  currentScore Int?
-  level        String?
-  foodPosition Json?
-  snakePosition Json?
-  snakeLength Int?
-  userId       Int      @unique
-  user         User     @relation(fields: [userId], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
 
 model SudokuGame {
   id        Int      @id @default(autoincrement())

@@ -2,7 +2,7 @@
 
 這是一個小型的「多遊戲」專案：
 
-- `frontend/`: Vite + TypeScript（不使用 React/Vue 等框架），以「模組化 + lifecycle」方式組合多個遊戲頁面
+- `frontend/`: Vite + TypeScript（不使用 React/Vue 等框架），以「模組化 + lifecycle」方式組合遊戲頁面
 - `backend/`: Node.js + Express + Prisma（SQLite），提供登入/驗證與遊戲資料存取 API
 
 本文件**以技術架構為主**，開發/啟動指令只保留必要資訊。
@@ -44,7 +44,7 @@
 
 入口型別在 `frontend/src/types/game.ts`：
 
-- `id`: hash route 對應的識別（例如 `sudoku`、`snake`）
+- `id`: hash route 對應的識別（例如 `sudoku`）
 - `name`: 側邊選單顯示名稱
 - `init(container)`: 建立 DOM、掛事件、載入資料
 - `destroy()`: 移除 DOM、解除事件、清理 state（避免 memory leak）
@@ -55,7 +55,7 @@
 
 在 `frontend/src/main.ts`：
 
-- 建立 `games: Game[] = [new SudokuGame(), new SudokuHistoryPage(), new SnakeGame()]`
+- 建立 `games: Game[] = [new SudokuGame(), new SudokuHistoryPage()]`
 - 監聽 `hashchange`
 - `switchGame(game)` 會：
   - 如果有 `activeGame`：先 `activeGame.destroy()`
@@ -85,7 +85,7 @@
 目前前端狀態來源主要有兩種：
 
 - **localStorage**：例如 Sudoku 的 `input-{r}-{c}`、遊戲難度、部分 UI 狀態
-- **backend**：登入後用 token 存取 `snake-game` / `sudoku-game` / `sudoku-history`
+- **backend**：登入後用 token 存取 `sudoku-game` / `sudoku-history`
 
 做法上偏向「localStorage 做 UI/互動即時狀態，後端做持久化」：
 
@@ -93,9 +93,6 @@
   - 初次進入：若後端 `GET /sudoku-game` 404，前端生成 puzzle，然後 `POST /sudoku-game` 建立
   - 遊玩中：輸入觸發 `window` event（如 `sudoku:cell-change`），再用 `debounce` 做 `PATCH /sudoku-game`
   - 里程碑：結束/重置時寫入 `POST /sudoku-history`
-- Snake：
-  - `init()` 時 `GET /snake-game` 載入
-  - 遊玩中用 debounce 做 `PATCH /snake-game`
 
 #### 5) API client：集中處理 token / refresh / auth expired
 
@@ -105,7 +102,7 @@
 - 若後端在 response header 回 `X-New-Token`，前端自動更新 localStorage token
 - 若遇到 `401/403`，dispatch `auth:expired` 事件，讓 `main.ts` 觸發登出流程
 
-> 這個設計把「驗證/續期」邏輯集中起來，讓各遊戲 API module（例如 `sudokuApi`、`snakeApi`）只要關心資料本身。
+> 這個設計把「驗證/續期」邏輯集中起來，讓各遊戲 API module（例如 `sudokuApi`）只要關心資料本身。
 
 #### 6) Auth UI：Login Gate 以 Modal 形式隔離
 
@@ -168,9 +165,8 @@
 `backend/prisma/schema.prisma` 主要模型：
 
 - `User`
-  - one-to-one: `SnakeGame`、`SudokuGame`
+  - one-to-one: `SudokuGame`
   - one-to-many: `SudoKuHistory[]`
-- `SnakeGame`：保存分數、難度、snake/food position（Json）
 - `SudokuGame`：保存 puzzle/board/level/initialPuzzle（Json）
 - `SudoKuHistory`：保存每次紀錄的 puzzle/board/level/isComplete
 
