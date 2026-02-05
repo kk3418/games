@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "tsx watch src/index.ts",
-    "prod": "tsx src/index.ts"
+    "migrate:deploy": "npx prisma migrate deploy",
+    "prod": "npx prisma generate && tsx src/index.ts"
   },
   "keywords": [],
   "author": "",
