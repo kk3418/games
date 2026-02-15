@@ -18,8 +18,7 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  sudokuGame SudokuGame?
-  sudokuHistories SudoKuHistory[]
+  sudokuGames SudokuGame[]
 }
 
 
@@ -28,21 +27,11 @@ model SudokuGame {
   puzzle    Json
   board     Json
   level     String
-  userId    Int      @unique
+  userId    Int
   user      User     @relation(fields: [userId], references: [id])
   initialPuzzle Json
+  isComplete Boolean  @default(false)
+  isInProgress Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-model SudoKuHistory {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  user       User     @relation(fields: [userId], references: [id])
-  puzzle     Json
-  board      Json
-  level      String
-  isComplete Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
 }

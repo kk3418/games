@@ -6,7 +6,7 @@ export const getHistory = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId
 
-    const histories = await prisma.sudoKuHistory.findMany({
+    const histories = await prisma.sudokuGame.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
     })
@@ -29,10 +29,13 @@ export const createHistory = async (req: Request, res: Response) => {
       return
     }
 
-    const history = await prisma.sudoKuHistory.create({
+    const history = await prisma.sudokuGame.create({
       data: {
-        userId,
+        user: {
+          connect: { id: userId },
+        },
         puzzle,
+        initialPuzzle: puzzle,
         board,
         level,
         isComplete: Boolean(isComplete),
@@ -63,7 +66,7 @@ export const updateHistoryStatus = async (req: Request, res: Response) => {
       return
     }
 
-    const updateResult = await prisma.sudoKuHistory.updateMany({
+    const updateResult = await prisma.sudokuGame.updateMany({
       where: { id: historyId, userId },
       data: { isComplete },
     })
@@ -73,7 +76,7 @@ export const updateHistoryStatus = async (req: Request, res: Response) => {
       return
     }
 
-    const history = await prisma.sudoKuHistory.findUnique({ where: { id: historyId } })
+    const history = await prisma.sudokuGame.findUnique({ where: { id: historyId } })
     res.json(history)
   } catch (error: any) {
     console.error('Error updating sudoku history:', error)

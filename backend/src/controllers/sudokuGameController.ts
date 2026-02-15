@@ -5,7 +5,7 @@ export const getSudokuGame = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
 
-    const sudokuGame = await prisma.sudokuGame.findUnique({
+    const sudokuGame = await prisma.sudokuGame.findFirst({
       where: { userId },
     });
 
@@ -26,7 +26,7 @@ export const createSudokuGame = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
     const { puzzle, initialPuzzle, board, level } = req.body;
 
-    const existingRecord = await prisma.sudokuGame.findUnique({
+    const existingRecord = await prisma.sudokuGame.findFirst({
       where: { userId },
     });
 
@@ -63,17 +63,17 @@ export const updateSudokuGame = async (req: Request, res: Response) => {
     if (board !== undefined) updateData.board = board;
     if (level !== undefined) updateData.level = level;
 
-    const sudokuGame = await prisma.sudokuGame.update({
+    const updateResult = await prisma.sudokuGame.updateMany({
       where: { userId },
       data: updateData,
     });
 
-    if (!sudokuGame) {
+    if (updateResult.count === 0) {
       res.status(404).json({ error: 'Sudoku game record not found' });
       return;
     }
 
-    res.json(sudokuGame);
+    res.json(updateResult);
   } catch (error) {
     console.error('Error updating sudoku game:', error);
     res.status(500).json({ error: 'Internal server error' });
