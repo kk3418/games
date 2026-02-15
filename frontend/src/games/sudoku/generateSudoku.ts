@@ -3,13 +3,6 @@ import generateEmptyIndex from '@/games/sudoku/generateEmptyIndex'
 import { clone2DArray } from '@/utilities/copyUtilities'
 
 function generateSudoku(level: string) {
-  const puzzleStorage = JSON.parse(localStorage.getItem('puzzle') ?? '[]')
-  const boardStorage = JSON.parse(localStorage.getItem('board') ?? '[]')
-
-  if (puzzleStorage.length > 0 && boardStorage.length > 0) {
-    return { puzzle: puzzleStorage, board: boardStorage }
-  }
-
   const rows = Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => false))
   const cols = Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => false))
   const boxes = Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => false))
@@ -125,9 +118,6 @@ function generateSudoku(level: string) {
     checkPuzzleSolution(0, 0)
   } while (solution !== 1)
   console.timeEnd('check solution')
-
-  localStorage.setItem('board', JSON.stringify(board))
-  localStorage.setItem('puzzle', JSON.stringify(puzzle))
 
   return { puzzle, board }
 }

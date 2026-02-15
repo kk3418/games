@@ -1,4 +1,4 @@
-import { getCellValueFromStorage, setCellValueToStorage } from '@/games/sudoku/cellStorage'
+import { setCellValueToStorage } from '@/games/sudoku/cellStorage'
 
 export function sanitizeCellValue(raw: string): string {
   const match = raw.match(/[1-9]/)
@@ -12,7 +12,10 @@ export function setCellValue(input: HTMLInputElement, value: string): void {
   input.focus()
 }
 
-export function createDifficultySelect(onLevelChange: (level: string) => void): HTMLDivElement {
+export function createDifficultySelect(
+  selectedLevel: string,
+  onLevelChange: (level: string) => void,
+): HTMLDivElement {
   const wrap = document.createElement('div')
   wrap.className = 'difficulty'
 
@@ -34,7 +37,6 @@ export function createDifficultySelect(onLevelChange: (level: string) => void): 
 
   select.addEventListener('change', () => {
     onLevelChange(select.value)
-    localStorage.setItem('level', select.value)
   })
 
   for (const opt of options) {
@@ -44,7 +46,7 @@ export function createDifficultySelect(onLevelChange: (level: string) => void): 
     select.appendChild(option)
   }
 
-  select.value = localStorage.getItem('level') || 'medium'
+  select.value = selectedLevel
 
   wrap.appendChild(label)
   wrap.appendChild(select)
@@ -117,6 +119,7 @@ export function createKeypad(
 export function createSudokuTable(
   puzzle: number[][],
   setActiveCellInput: (input: HTMLInputElement) => void,
+  currentProgress?: number[][],
 ): HTMLTableElement {
   const table = document.createElement('table')
   table.className = 'sudoku'
@@ -140,9 +143,9 @@ export function createSudokuTable(
         input.disabled = true
         td.classList.add('given')
       } else {
-        const stored = getCellValueFromStorage(r, c)
-        if (stored) {
-          input.value = stored
+        const progressValue = currentProgress?.[r]?.[c] ?? 0
+        if (progressValue !== 0) {
+          input.value = String(progressValue)
         }
         input.addEventListener('focus', () => {
           setActiveCellInput(input)

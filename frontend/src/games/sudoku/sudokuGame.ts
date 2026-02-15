@@ -1,7 +1,6 @@
 import '@/games/sudoku/sudoku.css'
 import generateSudoku from '@/games/sudoku/generateSudoku'
 import { createDifficultySelect, createKeypad, createSudokuTable } from '@/games/sudoku/sudokuUI'
-import { getAllInput } from '@/games/sudoku/getStorageInput'
 import { showEndGameModal } from '@/games/sudoku/endGameModal'
 import type { Game } from '@/types/game'
 import { sudokuApi, type SudokuGameData } from '@/games/sudoku/sudokuApi'
@@ -17,14 +16,23 @@ export class SudokuGame implements Game {
   private sudokuWrap: HTMLElement | null = null
   private gameData: SudokuGameData | null = null
   private basePuzzle?: number[][]
+  private currentProgress: number[][] = this.createEmptyProgress()
+  private solutionBoard?: number[][]
+  private currentLevel = 'medium'
 
-  private onCellChange = () => {
+  private onCellChange = (event: Event) => {
+    const detail = (event as CustomEvent<{ row: number; col: number; value: string }>).detail
+    if (!detail) return
+    const { row, col, value } = detail
+    if (!this.currentProgress[row]) return
+    const num = value ? Number(value) : 0
+    this.currentProgress[row][col] = Number.isFinite(num) ? num : 0
     this.debouncedUpdateGame()
   }
 
   // Debounced function for updating the game state
   private debouncedUpdateGame = debounce(() => {
-    const level = localStorage.getItem('level') || this.gameData?.level || 'medium'
+    const level = this.currentLevel || this.gameData?.level || 'medium'
     const basePuzzle = this.basePuzzle
     if (!basePuzzle) return
     const progressPuzzle = this.getProgressPuzzle(basePuzzle)
@@ -56,9 +64,9 @@ export class SudokuGame implements Game {
       }
     }
 
-    // Use saved level or default to medium
-    const level = localStorage.getItem('level') || serverGame?.level || 'medium'
-    localStorage.setItem('level', level)
+    // Use backend level or default to medium
+    const level = serverGame?.level || 'medium'
+    this.currentLevel = level
 
     let puzzle: number[][]
     let board: number[][]
@@ -69,41 +77,31 @@ export class SudokuGame implements Game {
       puzzle = generated.puzzle
       board = generated.board
       this.basePuzzle = puzzle
+      this.currentProgress = this.createEmptyProgress()
+      this.solutionBoard = board
 
       this.createGameOnServer({ puzzle, initialPuzzle: puzzle, board, level })
     } else {
       const initial = serverGame.initialPuzzle || []
       const current = serverGame.puzzle || []
+      board = serverGame.board ?? []
+      this.solutionBoard = board
 
-      // 還原使用者輸入到 localStorage
-      this.clearSudokuStorage()
-      for (let r = 0; r < 9; r++) {
-        for (let c = 0; c < 9; c++) {
-          // 如果初始是空格但現在有值，表示是使用者的輸入
-          if (initial[r][c] === 0 && current[r][c] !== 0) {
-            localStorage.setItem(`input-${r}-${c}`, String(current[r][c]))
-          }
-        }
-      }
+      this.currentProgress = this.extractProgress(initial, current)
 
       puzzle = initial
-      board = serverGame.board ?? []
-      localStorage.setItem('puzzle', JSON.stringify(puzzle))
-      localStorage.setItem('board', JSON.stringify(board))
-      localStorage.setItem('level', serverGame.level || level)
-
       this.basePuzzle = initial
     }
 
     this.sudokuWrap.appendChild(
       createSudokuTable(puzzle, (input) => {
         this.activeCellInput = input
-      }),
+      }, this.currentProgress),
     )
 
     window.addEventListener('sudoku:cell-change', this.onCellChange)
 
-    const difficultyWrap = createDifficultySelect((level) => {
+    const difficultyWrap = createDifficultySelect(this.currentLevel, (level) => {
       this.resetGame(level)
     })
 
@@ -113,7 +111,7 @@ export class SudokuGame implements Game {
       createKeypad(
         () => this.activeCellInput,
         () => this.checkSolution(),
-        () => this.resetGame(localStorage.getItem('level') ?? 'medium'),
+        () => this.resetGame(this.currentLevel),
       ),
     )
 
@@ -131,35 +129,20 @@ export class SudokuGame implements Game {
     window.removeEventListener('sudoku:cell-change', this.onCellChange)
   }
 
-  private clearSudokuStorage(): void {
-    localStorage.removeItem('puzzle')
-    localStorage.removeItem('board')
-    localStorage.removeItem('initialPuzzle')
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const k = localStorage.key(i)
-      if (k && k.startsWith('input-')) {
-        localStorage.removeItem(k)
-      }
-    }
-  }
-
   private resetGame(level: string) {
     if (!this.sudokuWrap) return
-    this.clearSudokuStorage()
+    this.currentLevel = level
     const generated = generateSudoku(level)
     const { puzzle, board } = generated
 
-    // Save the board for validation
-    localStorage.setItem('board', JSON.stringify(board))
-    localStorage.setItem('initialPuzzle', JSON.stringify(puzzle))
-    localStorage.setItem('puzzle', JSON.stringify(puzzle))
-    localStorage.setItem('level', level)
     this.basePuzzle = puzzle
+    this.currentProgress = this.createEmptyProgress()
+    this.solutionBoard = board
 
     this.sudokuWrap.replaceChildren(
       createSudokuTable(puzzle, (input) => {
         this.activeCellInput = input
-      }),
+      }, this.currentProgress),
     )
 
     // Update the game on server
@@ -169,9 +152,9 @@ export class SudokuGame implements Game {
   }
 
   private logHistory(isComplete: boolean) {
-    const level = localStorage.getItem('level') ?? this.gameData?.level ?? 'medium'
-    const puzzle = this.basePuzzle || JSON.parse(localStorage.getItem('puzzle') ?? '[]')
-    const board = JSON.parse(localStorage.getItem('board') ?? '[]')
+    const level = this.currentLevel || this.gameData?.level || 'medium'
+    const puzzle = this.basePuzzle
+    const board = this.solutionBoard
 
     if (!puzzle || !board) return
 
@@ -183,10 +166,10 @@ export class SudokuGame implements Game {
   private checkSolution() {
     console.log('check solution')
 
-    const inputValue = getAllInput()
-    const boardStorage = JSON.parse(localStorage.getItem('board') ?? '[]')
+    const boardStorage = this.solutionBoard
+    const inputValue = this.currentProgress
 
-    if (Object.keys(inputValue).length === 0) {
+    if (!inputValue.length || !boardStorage || !boardStorage.length) {
       showEndGameModal({
         title: 'Not yet',
         message: 'Something wrong :(',
@@ -195,19 +178,22 @@ export class SudokuGame implements Game {
       return
     }
 
-    for (const [k, v] of Object.entries(inputValue)) {
-      const [row, col] = k.split('-')
-      if (boardStorage[row][col] !== Number(v) && v) {
-        showEndGameModal({
-          title: 'Not yet',
-          message: 'Something wrong :(',
-          primaryText: 'Continue',
-        })
-        return
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        const v = inputValue[r]?.[c]
+        if (!v) continue
+        if (boardStorage[r]?.[c] !== Number(v)) {
+          showEndGameModal({
+            title: 'Not yet',
+            message: 'Something wrong :(',
+            primaryText: 'Continue',
+          })
+          return
+        }
       }
     }
 
-    const lastGameLevel = localStorage.getItem('level') ?? ''
+    const lastGameLevel = this.currentLevel ?? ''
 
     // Record completed game
     this.logHistory(true)
@@ -241,16 +227,34 @@ export class SudokuGame implements Game {
     }
   }
 
+  private createEmptyProgress(): number[][] {
+    return Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => 0))
+  }
+
+  private extractProgress(initial: number[][], current: number[][]): number[][] {
+    const progress = this.createEmptyProgress()
+
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (initial?.[r]?.[c] === 0 && current?.[r]?.[c]) {
+          progress[r][c] = current[r][c]
+        }
+      }
+    }
+
+    return progress
+  }
+
   // Get the current state of the puzzle (base puzzle + current inputs)
   private getProgressPuzzle(basePuzzle: number[][]): number[][] {
-    const inputValues = getAllInput()
     const currentPuzzle: number[][] = JSON.parse(JSON.stringify(basePuzzle))
 
-    for (const [key, value] of Object.entries(inputValues)) {
-      const [row, col] = key.split('-').map(Number)
-      if (!currentPuzzle[row] || typeof currentPuzzle[row][col] === 'undefined') continue
-      const n = value ? Number(value) : 0
-      currentPuzzle[row][col] = Number.isFinite(n) ? n : 0
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        const n = this.currentProgress?.[r]?.[c] ?? 0
+        if (!currentPuzzle[r] || typeof currentPuzzle[r][c] === 'undefined') continue
+        currentPuzzle[r][c] = Number.isFinite(n) ? n : 0
+      }
     }
 
     return currentPuzzle

@@ -208,10 +208,10 @@ npm run dev
 
 - **Router 抽象化**：把 hash routing 改成 history routing
 - **EventBus 抽象**：將 `window.dispatchEvent` 包成 `eventBus`，讓測試更容易、避免全域事件散落
-- **StorageAdapter**：封裝 localStorage（統一 keys、可替換成 Capacitor Preferences），避免跨模組散落存取
 - **同步狀態與離線策略**：針對 Sudoku 加入 `saving/saved/failed` UI 狀態、retry/queue（建議放在 repository/service）
 - **ModalManager**：集中管理 modal lifecycle（login gate / end game），避免殘留與互相干擾
 - **Game layering（MVP/Presenter）**：將 Sudoku 的 state/sync 與 DOM UI 組裝拆分，讓邏輯可測/可維護
+- 目前已移除 localStorage，進度/等級僅依賴後端狀態。
 
 ### App（Capacitor）
 
