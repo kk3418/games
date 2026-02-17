@@ -3,6 +3,7 @@ import { api } from '@/utilities/api'
 export interface SudokuHistoryItem {
   id: number
   userId?: number
+  initialPuzzle: number[][]
   puzzle: number[][]
   board: number[][]
   level: string

@@ -100,9 +100,18 @@ export class SudokuHistoryPage implements Game {
       const tr = document.createElement('tr')
       for (let c = 0; c < 9; c++) {
         const td = document.createElement('td')
-        const value = item.puzzle?.[r]?.[c] ?? 0
-        td.textContent = value === 0 ? '' : String(value)
-        td.className = value === 0 ? 'history-cell-empty' : 'history-cell-given'
+        const initialPuzzleValue = item.initialPuzzle?.[r]?.[c] ?? 0
+        const puzzleValue = item.puzzle?.[r]?.[c] ?? 0
+
+        if (initialPuzzleValue !== 0) {
+          td.textContent = String(initialPuzzleValue)
+          td.classList.add('history-cell-given')
+        }
+
+        if (puzzleValue !== 0) {
+          td.textContent = String(puzzleValue)
+        }
+
         tr.appendChild(td)
       }
       grid.appendChild(tr)
