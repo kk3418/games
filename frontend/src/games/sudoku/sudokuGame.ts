@@ -32,11 +32,12 @@ export class SudokuGame implements Game {
 
   // Debounced function for updating the game state
   private debouncedUpdateGame = debounce(() => {
-    const level = this.currentLevel || this.gameData?.level || 'medium'
+    const level = this.currentLevel || this.gameData?.level
     const basePuzzle = this.basePuzzle
     if (!basePuzzle) return
     const progressPuzzle = this.getProgressPuzzle(basePuzzle)
     this.updateGameToServer({
+      id: this.gameData?.id,
       puzzle: progressPuzzle,
       initialPuzzle: this.basePuzzle,
       level,
@@ -146,7 +147,13 @@ export class SudokuGame implements Game {
     )
 
     // Update the game on server
-    this.updateGameToServer({ puzzle, initialPuzzle: puzzle, board, level })
+    this.updateGameToServer({
+      id: this.gameData?.id,
+      puzzle,
+      initialPuzzle: puzzle,
+      board,
+      level
+    })
     // Track new puzzle as in-progress
     this.logHistory(false)
   }
@@ -159,7 +166,7 @@ export class SudokuGame implements Game {
     if (!puzzle || !board) return
 
     sudokuHistoryApi
-      .createHistory({ puzzle, board, level, isComplete })
+      .createHistory({ initialPuzzle: puzzle, puzzle, board, level, isComplete })
       .catch((err) => console.error('Failed to log sudoku history', err))
   }
 

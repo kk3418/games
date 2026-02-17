@@ -55,7 +55,11 @@ export const updateSudokuGame = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
 
-    const { puzzle, initialPuzzle, board, level  } = req.body;
+    const { puzzle, initialPuzzle, board, level, id  } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ error: 'Id is required' });
+    }
 
     const updateData: Record<string, unknown> = {};
     if (puzzle !== undefined) updateData.puzzle = puzzle;
@@ -64,7 +68,7 @@ export const updateSudokuGame = async (req: Request, res: Response) => {
     if (level !== undefined) updateData.level = level;
 
     const updateResult = await prisma.sudokuGame.updateMany({
-      where: { userId },
+      where: { userId, id },
       data: updateData,
     });
 
