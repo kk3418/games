@@ -31,9 +31,7 @@ export const createHistory = async (req: Request, res: Response) => {
 
     const history = await prisma.sudokuGame.create({
       data: {
-        user: {
-          connect: { id: userId },
-        },
+        userId,
         puzzle,
         initialPuzzle: puzzle,
         board,

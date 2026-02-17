@@ -67,12 +67,12 @@ export const updateSudokuGame = async (req: Request, res: Response) => {
     if (board !== undefined) updateData.board = board;
     if (level !== undefined) updateData.level = level;
 
-    const updateResult = await prisma.sudokuGame.updateMany({
-      where: { userId, id },
+    const updateResult = await prisma.sudokuGame.update({
+      where: { id },
       data: updateData,
     });
 
-    if (updateResult.count === 0) {
+    if (!updateResult) {
       res.status(404).json({ error: 'Sudoku game record not found' });
       return;
     }
