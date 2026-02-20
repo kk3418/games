@@ -155,10 +155,10 @@ export class SudokuGame implements Game {
       level
     })
     // Track new puzzle as in-progress
-    this.logHistory(false)
+    this.logHistory({ isComplete: false, isInProgress: true })
   }
 
-  private logHistory(isComplete: boolean) {
+  private logHistory({ isComplete, isInProgress }: { isComplete: boolean; isInProgress: boolean }) {
     const level = this.currentLevel || this.gameData?.level || 'medium'
     const puzzle = this.basePuzzle
     const board = this.solutionBoard
@@ -166,7 +166,7 @@ export class SudokuGame implements Game {
     if (!puzzle || !board) return
 
     sudokuHistoryApi
-      .createHistory({ initialPuzzle: puzzle, puzzle, board, level, isComplete })
+      .createHistory({ initialPuzzle: puzzle, puzzle, board, level, isComplete, isInProgress })
       .catch((err) => console.error('Failed to log sudoku history', err))
   }
 
@@ -203,7 +203,7 @@ export class SudokuGame implements Game {
     const lastGameLevel = this.currentLevel ?? ''
 
     // Record completed game
-    this.logHistory(true)
+    this.logHistory({ isComplete: true, isInProgress: false })
 
     showEndGameModal({
       title: 'Congratulations!',

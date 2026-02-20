@@ -88,9 +88,17 @@ export class SudokuHistoryPage implements Game {
     meta.className = 'history-meta'
     const created = this.formatDate(item.createdAt)
     const updated = this.formatDate(item.updatedAt)
+
+    let statusText = 'Unfinished'
+    if (item.isComplete) {
+      statusText = 'Completed'
+    } else if (item.isInProgress) {
+      statusText = 'In progress'
+    }
+
     meta.innerHTML = `<span>Created at: ${created}</span>
     <span>Updated at: ${updated}</span>
-    <span class="history-status">${item.isComplete ? 'Completed' : 'In progress'}</span>`
+    <span class="history-status">${statusText}</span>`
 
     const gridWrap = document.createElement('div')
     const grid = document.createElement('table')

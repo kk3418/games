@@ -22,10 +22,10 @@ export const getHistory = async (req: Request, res: Response) => {
 export const createHistory = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId
-    const { puzzle, board, level, isComplete = false } = req.body
+    const { puzzle, board, level, isComplete, isInProgress } = req.body
 
-    if (!puzzle || !board || !level) {
-      res.status(400).json({ error: 'puzzle, board, and level are required' })
+    if (!puzzle || !board || !level || !isComplete || !isInProgress) {
+      res.status(400).json({ error: 'puzzle, board, level, isComplete, and isInProgress are required' })
       return
     }
 
@@ -36,7 +36,8 @@ export const createHistory = async (req: Request, res: Response) => {
         initialPuzzle: puzzle,
         board,
         level,
-        isComplete: Boolean(isComplete),
+        isComplete,
+        isInProgress,
       },
     })
 
@@ -52,7 +53,7 @@ export const updateHistoryStatus = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId
     const historyId = Number(req.params.id)
-    const { isComplete } = req.body
+    const { isComplete, isInProgress } = req.body
 
     if (Number.isNaN(historyId)) {
       res.status(400).json({ error: 'Invalid history id' })
@@ -66,7 +67,7 @@ export const updateHistoryStatus = async (req: Request, res: Response) => {
 
     const updateResult = await prisma.sudokuGame.updateMany({
       where: { id: historyId, userId },
-      data: { isComplete },
+      data: { isComplete, isInProgress },
     })
 
     if (updateResult.count === 0) {
@@ -74,8 +75,7 @@ export const updateHistoryStatus = async (req: Request, res: Response) => {
       return
     }
 
-    const history = await prisma.sudokuGame.findUnique({ where: { id: historyId } })
-    res.json(history)
+    res.json(updateResult)
   } catch (error: any) {
     console.error('Error updating sudoku history:', error)
     res.status(500).json({ error: 'Internal server error' })

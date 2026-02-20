@@ -8,6 +8,7 @@ export interface SudokuHistoryItem {
   board: number[][]
   level: string
   isComplete: boolean
+  isInProgress: boolean
   createdAt?: string
   updatedAt?: string
 }

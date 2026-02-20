@@ -27,7 +27,7 @@ export const createSudokuGame = async (req: Request, res: Response) => {
     const { puzzle, initialPuzzle, board, level } = req.body;
 
     const existingRecord = await prisma.sudokuGame.findFirst({
-      where: { userId },
+      where: { userId, initialPuzzle },
     });
 
     if (existingRecord) {
@@ -41,6 +41,7 @@ export const createSudokuGame = async (req: Request, res: Response) => {
         initialPuzzle,
         board,
         level,
+        isInProgress: true,
       },
     });
 
@@ -55,7 +56,7 @@ export const updateSudokuGame = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
 
-    const { puzzle, initialPuzzle, board, level, id  } = req.body;
+    const { puzzle, initialPuzzle, board, level, id, isComplete, isInProgress } = req.body;
 
     if (!id) {
       return res.status(400).json({ error: 'Id is required' });
@@ -66,6 +67,8 @@ export const updateSudokuGame = async (req: Request, res: Response) => {
     if (initialPuzzle !== undefined) updateData.initialPuzzle = initialPuzzle;
     if (board !== undefined) updateData.board = board;
     if (level !== undefined) updateData.level = level;
+    if (isComplete !== undefined) updateData.isComplete = isComplete;
+    if (isInProgress !== undefined) updateData.isInProgress = isInProgress;
 
     const updateResult = await prisma.sudokuGame.update({
       where: { id },
