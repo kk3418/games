@@ -25,7 +25,7 @@ export const createHistory = async (req: Request, res: Response) => {
     const { puzzle, board, level, isComplete, isInProgress } = req.body
 
     if (!puzzle || !board || !level || typeof isComplete !== 'boolean' || typeof isInProgress !== 'boolean') {
-      res.status(400).json({ error: 'One of puzzle, board, level, isComplete, and isInProgress is missing' })
+      res.status(400).json({ error: 'Fields are missing' })
       return
     }
 
@@ -53,21 +53,21 @@ export const updateHistoryStatus = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId
     const historyId = Number(req.params.id)
-    const { isComplete, isInProgress } = req.body
+    const { isInProgress } = req.body
 
     if (Number.isNaN(historyId)) {
       res.status(400).json({ error: 'Invalid history id' })
       return
     }
 
-    if (typeof isComplete !== 'boolean') {
-      res.status(400).json({ error: 'isComplete must be boolean' })
+    if ( typeof isInProgress !== 'boolean') {
+      res.status(400).json({ error: 'Fields are missing' })
       return
     }
 
     const updateResult = await prisma.sudokuGame.updateMany({
-      where: { id: historyId, userId },
-      data: { isComplete, isInProgress },
+      where: { id: historyId, userId, isComplete: false },
+      data: { isInProgress },
     })
 
     if (updateResult.count === 0) {
