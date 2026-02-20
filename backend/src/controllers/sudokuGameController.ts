@@ -41,7 +41,6 @@ export const createSudokuGame = async (req: Request, res: Response) => {
         initialPuzzle,
         board,
         level,
-        isInProgress: true,
       },
     });
 
