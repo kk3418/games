@@ -24,8 +24,8 @@ export const createHistory = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId
     const { puzzle, board, level, isComplete, isInProgress } = req.body
 
-    if (!puzzle || !board || !level || !isComplete || !isInProgress) {
-      res.status(400).json({ error: 'puzzle, board, level, isComplete, and isInProgress are required' })
+    if (!puzzle || !board || !level || typeof isComplete !== 'boolean' || typeof isInProgress !== 'boolean') {
+      res.status(400).json({ error: 'One of puzzle, board, level, isComplete, and isInProgress is missing' })
       return
     }
 
