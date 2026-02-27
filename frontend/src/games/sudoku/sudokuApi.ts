@@ -7,6 +7,8 @@ export interface SudokuGameData {
   initialPuzzle?: number[][]
   board?: number[][]
   level?: string
+  isComplete?: boolean
+  isInProgress?: boolean
   createdAt?: Date
   updatedAt?: Date
 }

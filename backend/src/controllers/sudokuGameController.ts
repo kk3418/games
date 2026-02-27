@@ -6,7 +6,7 @@ export const getSudokuGame = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
 
     const sudokuGame = await prisma.sudokuGame.findFirst({
-      where: { userId },
+      where: { isInProgress: true },
     });
 
     if (!sudokuGame) {
@@ -24,7 +24,7 @@ export const getSudokuGame = async (req: Request, res: Response) => {
 export const createSudokuGame = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
-    const { puzzle, initialPuzzle, board, level } = req.body;
+    const { puzzle, initialPuzzle, board, level, isInProgress } = req.body;
 
     const existingRecord = await prisma.sudokuGame.findFirst({
       where: { userId, initialPuzzle: { equals: initialPuzzle } },
@@ -34,6 +34,11 @@ export const createSudokuGame = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Sudoku game record already exists for this user' });
     }
 
+    await prisma.sudokuGame.updateMany({
+      where: { userId, isInProgress: true },
+      data: { isInProgress: false },
+    });
+
     const sudokuGame = await prisma.sudokuGame.create({
       data: {
         userId,
@@ -41,8 +46,10 @@ export const createSudokuGame = async (req: Request, res: Response) => {
         initialPuzzle,
         board,
         level,
+        isInProgress,
       },
     });
+
 
     res.status(201).json(sudokuGame);
   } catch (error) {
@@ -68,6 +75,13 @@ export const updateSudokuGame = async (req: Request, res: Response) => {
     if (level !== undefined) updateData.level = level;
     if (isComplete !== undefined) updateData.isComplete = isComplete;
     if (isInProgress !== undefined) updateData.isInProgress = isInProgress;
+
+    if (isInProgress === true) {
+      await prisma.sudokuGame.updateMany({
+        where: { userId, NOT: { id } },
+        data: { isInProgress: false },
+      });
+    }
 
     const updateResult = await prisma.sudokuGame.update({
       where: { id },

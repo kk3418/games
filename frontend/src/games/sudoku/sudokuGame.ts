@@ -81,7 +81,13 @@ export class SudokuGame implements Game {
       this.currentProgress = this.createEmptyProgress()
       this.solutionBoard = board
 
-      this.createGameOnServer({ puzzle, initialPuzzle: puzzle, board, level })
+      this.createGameOnServer({
+        puzzle,
+        initialPuzzle: puzzle,
+        board,
+        level,
+        isInProgress: true,
+      })
     } else {
       const initial = serverGame.initialPuzzle || []
       const current = serverGame.puzzle || []
@@ -146,16 +152,14 @@ export class SudokuGame implements Game {
       }, this.currentProgress),
     )
 
-    // Update the game on server
-    this.updateGameToServer({
+    this.createGameOnServer({
       id: this.gameData?.id,
       puzzle,
       initialPuzzle: puzzle,
       board,
-      level
+      level,
+      isInProgress: true,
     })
-    // Track new puzzle as in-progress
-    this.logHistory({ isComplete: false, isInProgress: true })
   }
 
   private logHistory({ isComplete, isInProgress }: { isComplete: boolean; isInProgress: boolean }) {
