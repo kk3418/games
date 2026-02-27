@@ -22,9 +22,9 @@ export const getHistory = async (req: Request, res: Response) => {
 export const createHistory = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId
-    const { puzzle, board, level, isComplete, isInProgress } = req.body
+    const { initialPuzzle, puzzle, board, level, isComplete, isInProgress } = req.body
 
-    if (!puzzle || !board || !level || typeof isComplete !== 'boolean' || typeof isInProgress !== 'boolean') {
+    if (!initialPuzzle || !puzzle || !board || !level || typeof isComplete !== 'boolean' || typeof isInProgress !== 'boolean') {
       res.status(400).json({ error: 'Fields are missing' })
       return
     }
@@ -33,7 +33,7 @@ export const createHistory = async (req: Request, res: Response) => {
       data: {
         userId,
         puzzle,
-        initialPuzzle: puzzle,
+        initialPuzzle,
         board,
         level,
         isComplete,
