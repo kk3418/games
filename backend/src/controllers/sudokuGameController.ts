@@ -27,7 +27,7 @@ export const createSudokuGame = async (req: Request, res: Response) => {
     const { puzzle, initialPuzzle, board, level } = req.body;
 
     const existingRecord = await prisma.sudokuGame.findFirst({
-      where: { userId, initialPuzzle },
+      where: { userId, initialPuzzle: { equals: initialPuzzle } },
     });
 
     if (existingRecord) {
