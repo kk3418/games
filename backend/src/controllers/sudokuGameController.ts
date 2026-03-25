@@ -6,7 +6,7 @@ export const getSudokuGame = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
 
     const sudokuGame = await prisma.sudokuGame.findFirst({
-      where: { isInProgress: true },
+      where: { userId, isInProgress: true },
     });
 
     if (!sudokuGame) {
