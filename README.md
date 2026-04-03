@@ -1,6 +1,6 @@
 # Games Monorepo (Vanilla TS + Express + Prisma)
 
-這是一個小型的「多遊戲」專案：
+這是一個小型的「多遊戲」專案（目前僅包含 **數獨 Sudoku**）：
 
 - `frontend/`: Vite + TypeScript（不使用 React/Vue 等框架），以「模組化 + lifecycle」方式組合遊戲頁面
 - `backend/`: Node.js + Express + Prisma（SQLite），提供登入/驗證與遊戲資料存取 API
@@ -202,27 +202,15 @@ npm run dev
 
 ---
 
-## 未來可優化項目
+## 疑難排解與修復紀錄
 
-### Frontend
+### HTML 表格空欄位塌陷問題 (Sudoku History)
 
-- **Router 抽象化**：把 hash routing 改成 history routing
-- **EventBus 抽象**：將 `window.dispatchEvent` 包成 `eventBus`，讓測試更容易、避免全域事件散落
-- **同步狀態與離線策略**：針對 Sudoku 加入 `saving/saved/failed` UI 狀態、retry/queue（建議放在 repository/service）
-- **ModalManager**：集中管理 modal lifecycle（login gate / end game），避免殘留與互相干擾
-- **Game layering（MVP/Presenter）**：將 Sudoku 的 state/sync 與 DOM UI 組裝拆分，讓邏輯可測/可維護
-- 目前已移除 localStorage，進度/等級僅依賴後端狀態。
-
-### App（Capacitor）
-
-- **環境切換**：App build-time 注入 backend URL（或 runtime config），避免 hardcode
-- **CORS/Origin 策略**：後端 allowlist web domain + Capacitor origin（例如 `capacitor://localhost`）
-- **Network 狀態偵測**：Web 使用 online/offline；App 使用 Capacitor Network plugin
-- **Storage 策略**：token/user 儲存改用 Preferences/secure storage（時間允許）
-- **Release pipeline**：iOS TestFlight + Android APK/internal testing 的打包與驗收流程
-
-### Backend
-
-- **Service/Repository 分層**：將 controller 的資料存取與業務規則抽到 `services/*`，controller 僅負責 HTTP 層
-- **共用錯誤處理**：統一錯誤格式與 status code（例如集中化 error handler middleware）
-- **Request schema validation**：為主要 API 加上 request body/params 驗證，避免 controller 內散落型別檢查
+- **問題描述**：在數獨歷史紀錄頁面 (`#sudoku-history`) 中，當某一整行（Column）完全沒有任何數字時，對應的 HTML `<td />` 內會完全沒有內容。此時即使 CSS 已經設定了固定的 `width` 和 `height` 以及 `table-layout: fixed`，部分瀏覽器渲染機制仍會將空內容的格子忽略或折疊，導致整個表格的排版發生塌陷。
+- **純 CSS 解法**：為了不影響 JavaScript 邏輯及保持資料綁定乾淨，可透過 CSS 的 `:empty` 偽類及 `::after` 偽元素，在沒有內容的 `td` 裡強制撐入一個不換行空白字元 (`\00a0`，即 HTML 中的 `&nbsp;`)：
+  ```css
+  .history-sudoku-grid td:empty::after {
+    content: "\00a0";
+  }
+  ```
+  這可以優雅地解決空單元格在網頁表格上塌陷縮放的歷史遺留問題。
