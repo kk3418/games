@@ -1,6 +1,7 @@
 import './sudokuHistory.css'
 import type { Game } from '@/types/game'
 import { sudokuHistoryApi, type SudokuHistoryItem } from '@/games/sudokuHistory/sudokuHistoryApi'
+import { sudokuApi } from '@/games/sudoku/sudokuApi'
 
 export class SudokuHistoryPage implements Game {
   id = 'sudoku-history'
@@ -99,6 +100,25 @@ export class SudokuHistoryPage implements Game {
     meta.innerHTML = `<span>Created at: ${created}</span>
     <span>Updated at: ${updated}</span>
     <span class="history-status">${statusText}</span>`
+
+    if (!item.isComplete && !item.isInProgress) {
+      const resumeBtn = document.createElement('button')
+      resumeBtn.className = 'history-btn primary'
+      resumeBtn.textContent = 'Resume'
+      resumeBtn.onclick = async () => {
+        try {
+          resumeBtn.disabled = true
+          resumeBtn.textContent = 'Resuming...'
+          await sudokuApi.updateSudokuGame({ id: item.id, isInProgress: true })
+          window.location.hash = 'sudoku'
+        } catch (error) {
+          console.error('Failed to resume game', error)
+          resumeBtn.disabled = false
+          resumeBtn.textContent = 'Resume'
+        }
+      }
+      meta.appendChild(resumeBtn)
+    }
 
     const gridWrap = document.createElement('div')
     const grid = document.createElement('table')

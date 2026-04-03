@@ -1,8 +1,8 @@
 import { api } from '@/utilities/api'
 
 export interface SudokuGameData {
-  id?: string
-  userId?: string
+  id?: number
+  userId?: number
   puzzle?: number[][]
   initialPuzzle?: number[][]
   board?: number[][]
