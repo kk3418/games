@@ -43,8 +43,19 @@ body {
   color: #343a40;
 }
 
-.user-section {
+.locale-select {
   margin-top: auto;
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 0.875rem;
+  color: #495057;
+  cursor: pointer;
+}
+
+.user-section {
   padding-top: 1rem;
   border-top: 1px solid #dee2e6;
 }

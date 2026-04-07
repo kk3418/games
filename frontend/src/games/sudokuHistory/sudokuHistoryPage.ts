@@ -2,10 +2,11 @@ import './sudokuHistory.css'
 import type { Game } from '@/types/game'
 import { sudokuHistoryApi, type SudokuHistoryItem } from '@/games/sudokuHistory/sudokuHistoryApi'
 import { sudokuApi } from '@/games/sudoku/sudokuApi'
+import { t } from '@/i18n'
 
 export class SudokuHistoryPage implements Game {
   id = 'sudoku-history'
-  name = 'Sudoku History'
+  get name() { return t('history.name') }
   private container: HTMLElement | null = null
   private listContainer: HTMLElement | null = null
   private statusText: HTMLElement | null = null
@@ -19,14 +20,14 @@ export class SudokuHistoryPage implements Game {
 
     const title = document.createElement('h2')
     title.className = 'history-title'
-    title.textContent = 'Sudoku History'
+    title.textContent = t('history.title')
 
     const actions = document.createElement('div')
     actions.className = 'history-actions'
 
     const refreshBtn = document.createElement('button')
     refreshBtn.className = 'history-btn secondary'
-    refreshBtn.textContent = 'Refresh'
+    refreshBtn.textContent = t('history.refresh')
     refreshBtn.onclick = () => this.loadHistory()
 
     actions.appendChild(refreshBtn)
@@ -59,12 +60,12 @@ export class SudokuHistoryPage implements Game {
 
   private async loadHistory(): Promise<void> {
     if (!this.listContainer || !this.statusText) return
-    this.statusText.textContent = 'Loading history...'
+    this.statusText.textContent = t('history.loading')
     this.listContainer.innerHTML = ''
     try {
       const histories = await sudokuHistoryApi.getHistory()
       if (histories.length === 0) {
-        this.statusText.innerHTML = '<div class="history-empty">No Sudoku games recorded yet.</div>'
+        this.statusText.innerHTML = `<div class="history-empty">${t('history.empty')}</div>`
         return
       }
       this.statusText.textContent = ''
@@ -73,7 +74,7 @@ export class SudokuHistoryPage implements Game {
       })
     } catch (error) {
       console.error('Failed to load sudoku history', error)
-      this.statusText.innerHTML = '<div class="history-error">Failed to load history.</div>'
+      this.statusText.innerHTML = `<div class="history-error">${t('history.loadError')}</div>`
     }
   }
 
@@ -90,31 +91,31 @@ export class SudokuHistoryPage implements Game {
     const created = this.formatDate(item.createdAt)
     const updated = this.formatDate(item.updatedAt)
 
-    let statusText = 'Unfinished'
+    let statusText = t('history.unfinished')
     if (item.isComplete) {
-      statusText = 'Completed'
+      statusText = t('history.completed')
     } else if (item.isInProgress) {
-      statusText = 'In progress'
+      statusText = t('history.inProgress')
     }
 
-    meta.innerHTML = `<span>Created at: ${created}</span>
-    <span>Updated at: ${updated}</span>
+    meta.innerHTML = `<span>${t('history.createdAt', { date: created })}</span>
+    <span>${t('history.updatedAt', { date: updated })}</span>
     <span class="history-status">${statusText}</span>`
 
     if (!item.isComplete && !item.isInProgress) {
       const resumeBtn = document.createElement('button')
       resumeBtn.className = 'history-btn primary'
-      resumeBtn.textContent = 'Resume'
+      resumeBtn.textContent = t('history.resume')
       resumeBtn.onclick = async () => {
         try {
           resumeBtn.disabled = true
-          resumeBtn.textContent = 'Resuming...'
+          resumeBtn.textContent = t('history.resuming')
           await sudokuApi.updateSudokuGame({ id: item.id, isInProgress: true })
           window.location.hash = 'sudoku'
         } catch (error) {
           console.error('Failed to resume game', error)
           resumeBtn.disabled = false
-          resumeBtn.textContent = 'Resume'
+          resumeBtn.textContent = t('history.resume')
         }
       }
       meta.appendChild(resumeBtn)

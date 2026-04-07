@@ -6,11 +6,12 @@ import type { Game } from '@/types/game'
 import { sudokuApi, type SudokuGameData } from '@/games/sudoku/sudokuApi'
 import { sudokuHistoryApi } from '@/games/sudokuHistory/sudokuHistoryApi'
 import { debounce } from '@/utilities/debounce'
+import { t } from '@/i18n'
 
 const UPDATE_GAME_DEBOUNCE_TIME = 1000
 export class SudokuGame implements Game {
   id = 'sudoku'
-  name = 'Sudoku'
+  get name() { return t('sudoku.name') }
   private activeCellInput: HTMLInputElement | null = null
   private container: HTMLElement | null = null
   private sudokuWrap: HTMLElement | null = null
@@ -183,9 +184,9 @@ export class SudokuGame implements Game {
 
     if (!inputValue.length || !boardStorage || !boardStorage.length) {
       showEndGameModal({
-        title: 'Not yet',
-        message: 'Something wrong :(',
-        primaryText: 'Continue',
+        title: t('sudoku.notYet'),
+        message: t('sudoku.somethingWrong'),
+        primaryText: t('sudoku.continue'),
       })
       return
     }
@@ -196,9 +197,9 @@ export class SudokuGame implements Game {
         if (!v) continue
         if (boardStorage[r]?.[c] !== Number(v)) {
           showEndGameModal({
-            title: 'Not yet',
-            message: 'Something wrong :(',
-            primaryText: 'Continue',
+            title: t('sudoku.notYet'),
+            message: t('sudoku.somethingWrong'),
+            primaryText: t('sudoku.continue'),
           })
           return
         }
@@ -211,9 +212,9 @@ export class SudokuGame implements Game {
     this.logHistory({ isComplete: true, isInProgress: false })
 
     showEndGameModal({
-      title: 'Congratulations!',
-      message: 'You solved the puzzle correctly!',
-      primaryText: 'New Game',
+      title: t('sudoku.congratulations'),
+      message: t('sudoku.solvedMessage'),
+      primaryText: t('sudoku.newGame'),
       endGame: (level: string) => this.resetGame(level),
       endGameArgs: [lastGameLevel],
     })

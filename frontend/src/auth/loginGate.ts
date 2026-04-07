@@ -2,6 +2,7 @@ import type { AuthResponse } from '@/types/auth'
 import { api } from '@/utilities/api'
 import { showAppModal } from '@/components/appModal'
 import { GoogleAuth } from '@/auth/googleAuth'
+import { t } from '@/i18n'
 
 type LoginGateOptions = {
   auth: GoogleAuth
@@ -28,12 +29,12 @@ export function showLoginGate(options: LoginGateOptions): void {
   const loginTab = document.createElement('button')
   loginTab.type = 'button'
   loginTab.className = 'login-gate-tab login-gate-tab-active'
-  loginTab.textContent = 'Login'
+  loginTab.textContent = t('auth.login')
 
   const registerTab = document.createElement('button')
   registerTab.type = 'button'
   registerTab.className = 'login-gate-tab'
-  registerTab.textContent = 'Register'
+  registerTab.textContent = t('auth.register')
 
   tabs.appendChild(loginTab)
   tabs.appendChild(registerTab)
@@ -44,7 +45,7 @@ export function showLoginGate(options: LoginGateOptions): void {
   const nameInput = document.createElement('input')
   nameInput.type = 'text'
   nameInput.name = 'name'
-  nameInput.placeholder = 'Name (optional)'
+  nameInput.placeholder = t('auth.namePlaceholder')
   nameInput.autocomplete = 'name'
   nameInput.required = false
   nameInput.className = 'login-gate-input'
@@ -53,7 +54,7 @@ export function showLoginGate(options: LoginGateOptions): void {
   const emailInput = document.createElement('input')
   emailInput.type = 'email'
   emailInput.name = 'email'
-  emailInput.placeholder = 'Email'
+  emailInput.placeholder = t('auth.emailPlaceholder')
   emailInput.autocomplete = 'email'
   emailInput.required = true
   emailInput.className = 'login-gate-input'
@@ -61,7 +62,7 @@ export function showLoginGate(options: LoginGateOptions): void {
   const passwordInput = document.createElement('input')
   passwordInput.type = 'password'
   passwordInput.name = 'password'
-  passwordInput.placeholder = 'Password'
+  passwordInput.placeholder = t('auth.passwordPlaceholder')
   passwordInput.autocomplete = 'current-password'
   passwordInput.required = true
   passwordInput.className = 'login-gate-input'
@@ -69,7 +70,7 @@ export function showLoginGate(options: LoginGateOptions): void {
   const loginBtn = document.createElement('button')
   loginBtn.type = 'submit'
   loginBtn.className = 'login-gate-submit'
-  loginBtn.textContent = 'Login'
+  loginBtn.textContent = t('auth.login')
 
   form.appendChild(messageEl)
   form.appendChild(errorEl)
@@ -80,7 +81,7 @@ export function showLoginGate(options: LoginGateOptions): void {
 
   const divider = document.createElement('div')
   divider.className = 'login-gate-divider'
-  divider.textContent = 'or'
+  divider.textContent = t('auth.or')
 
   const googleWrap = document.createElement('div')
   googleWrap.className = 'login-gate-google'
@@ -92,7 +93,7 @@ export function showLoginGate(options: LoginGateOptions): void {
 
   const dialog = showAppModal({
     id: 'login-gate-modal',
-    title: 'Sign in',
+    title: t('auth.signIn'),
     body,
     closeable: false,
   })
@@ -112,11 +113,11 @@ export function showLoginGate(options: LoginGateOptions): void {
     loginTab.classList.toggle('login-gate-tab-active', !isRegister)
     registerTab.classList.toggle('login-gate-tab-active', isRegister)
 
-    loginBtn.textContent = isRegister ? 'Create account' : 'Login'
+    loginBtn.textContent = isRegister ? t('auth.createAccount') : t('auth.login')
     passwordInput.autocomplete = isRegister ? 'new-password' : 'current-password'
 
     if (modalTitleEl instanceof HTMLElement) {
-      modalTitleEl.textContent = isRegister ? 'Create account' : 'Sign in'
+      modalTitleEl.textContent = isRegister ? t('auth.createAccount') : t('auth.signIn')
     }
   }
 
@@ -158,7 +159,7 @@ export function showLoginGate(options: LoginGateOptions): void {
           password: passwordInput.value,
         })
 
-        messageEl.textContent = 'Account created. Please login.'
+        messageEl.textContent = t('auth.accountCreated')
         messageEl.hidden = false
         passwordInput.value = ''
         nameInput.value = ''

@@ -4,11 +4,37 @@ import { SudokuHistoryPage } from '@/games/sudokuHistory/sudokuHistoryPage'
 import { GoogleAuth } from '@/auth/googleAuth'
 import { showLoginGate } from '@/auth/loginGate'
 import type { Game } from '@/types/game'
+import { initLocale, t, getLocale, setLocale, SUPPORTED_LOCALES } from '@/i18n'
+
+initLocale()
+document.title = t('app.title')
 
 const gameList = document.getElementById('game-list')
 const contentDiv = document.getElementById('game-content')
 const menuToggle = document.getElementById('menu-toggle')
 const sideMenu = document.getElementById('side-menu')
+
+const sideMenuHeading = sideMenu?.querySelector('h2')
+if (sideMenuHeading) sideMenuHeading.textContent = t('app.sidebarHeading')
+if (menuToggle) menuToggle.setAttribute('aria-label', t('app.toggleMenu'))
+
+if (sideMenu) {
+  const localeSelect = document.createElement('select')
+  localeSelect.className = 'locale-select'
+  const localeLabels: Record<string, string> = { en: 'English', 'zh-TW': '繁體中文' }
+  for (const locale of SUPPORTED_LOCALES) {
+    const opt = document.createElement('option')
+    opt.value = locale
+    opt.textContent = localeLabels[locale]
+    opt.selected = locale === getLocale()
+    localeSelect.appendChild(opt)
+  }
+  localeSelect.addEventListener('change', () => {
+    const selected = localeSelect.value
+    if (selected === 'en' || selected === 'zh-TW') setLocale(selected)
+  })
+  sideMenu.appendChild(localeSelect)
+}
 
 // Initialize Auth
 const auth = new GoogleAuth('user-section')

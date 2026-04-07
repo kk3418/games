@@ -3,6 +3,7 @@ export const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 import type { AuthResponse, User } from '@/types/auth'
 import { api } from '@/utilities/api'
+import { t } from '@/i18n'
 
 export class GoogleAuth {
   private userSection: HTMLElement
@@ -47,7 +48,7 @@ export class GoogleAuth {
   public renderGoogleButton(container: HTMLElement): void {
     if (!GOOGLE_CLIENT_ID) {
       console.error('VITE_GOOGLE_CLIENT_ID is not set')
-      container.innerHTML = '<p class="error">Google Client ID not configured</p>'
+      container.innerHTML = `<p class="error">${t('auth.googleNotConfigured')}</p>`
       return
     }
 
@@ -84,7 +85,7 @@ export class GoogleAuth {
       this.handleLoginSuccess(data)
     } catch (error) {
       console.error('Error logging in:', error)
-      alert('Login failed. Please try again.')
+      alert(t('auth.loginFailed'))
     }
   }
 
@@ -136,12 +137,12 @@ export class GoogleAuth {
     if (this.currentUser) {
       const userInfo = document.createElement('div')
       userInfo.className = 'user-info'
-      userInfo.innerHTML = `
-        <span>Welcome, ${this.currentUser.name || this.currentUser.email}</span>
-      `
+      const welcomeSpan = document.createElement('span')
+      welcomeSpan.textContent = t('auth.welcome', { name: this.currentUser.name || this.currentUser.email })
+      userInfo.appendChild(welcomeSpan)
 
       const logoutBtn = document.createElement('button')
-      logoutBtn.textContent = 'Logout'
+      logoutBtn.textContent = t('auth.logout')
       logoutBtn.className = 'logout-btn'
       logoutBtn.onclick = () => this.handleLogout()
 

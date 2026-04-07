@@ -1,0 +1,52 @@
+import type en from './en'
+
+const zhTW: { [K in keyof typeof en]: string } = {
+  'app.title': '遊戲',
+  'app.sidebarHeading': '數獨',
+  'app.toggleMenu': '切換選單',
+
+  'auth.login': '登入',
+  'auth.register': '註冊',
+  'auth.signIn': '登入',
+  'auth.createAccount': '建立帳號',
+  'auth.namePlaceholder': '名稱（選填）',
+  'auth.emailPlaceholder': '電子郵件',
+  'auth.passwordPlaceholder': '密碼',
+  'auth.or': '或',
+  'auth.accountCreated': '帳號已建立，請登入。',
+  'auth.loginFailed': '登入失敗，請再試一次。',
+  'auth.welcome': '歡迎，{name}',
+  'auth.logout': '登出',
+  'auth.googleNotConfigured': 'Google Client ID 未設定',
+
+  'sudoku.name': '數獨',
+  'sudoku.level': '難度',
+  'sudoku.easy': '簡單',
+  'sudoku.medium': '中等',
+  'sudoku.hard': '困難',
+  'sudoku.clear': 'X',
+  'sudoku.check': '檢查',
+  'sudoku.reset': '重置',
+  'sudoku.notYet': '還沒完成',
+  'sudoku.somethingWrong': '有地方不對 :(',
+  'sudoku.continue': '繼續',
+  'sudoku.congratulations': '恭喜！',
+  'sudoku.solvedMessage': '你成功解開了這道謎題！',
+  'sudoku.newGame': '新遊戲',
+
+  'history.name': '歷史紀錄',
+  'history.title': '數獨歷史紀錄',
+  'history.refresh': '重新整理',
+  'history.loading': '載入歷史紀錄...',
+  'history.empty': '尚未有數獨遊戲紀錄。',
+  'history.loadError': '載入歷史紀錄失敗。',
+  'history.createdAt': '建立時間：{date}',
+  'history.updatedAt': '更新時間：{date}',
+  'history.completed': '已完成',
+  'history.inProgress': '進行中',
+  'history.unfinished': '未完成',
+  'history.resume': '繼續',
+  'history.resuming': '恢復中...',
+}
+
+export default zhTW

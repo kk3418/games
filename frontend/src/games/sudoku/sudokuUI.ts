@@ -1,4 +1,5 @@
 import { setCellValueToStorage } from '@/games/sudoku/cellStorage'
+import { t } from '@/i18n'
 
 export function sanitizeCellValue(raw: string): string {
   const match = raw.match(/[1-9]/)
@@ -8,7 +9,6 @@ export function sanitizeCellValue(raw: string): string {
 export function setCellValue(input: HTMLInputElement, value: string): void {
   if (input.disabled || input.readOnly) return
   input.value = value
-  // input.dispatchEvent(new Event('input', { bubbles: true }))
   input.focus()
 }
 
@@ -22,7 +22,7 @@ export function createDifficultySelect(
   const label = document.createElement('label')
   label.className = 'difficulty-label'
   label.htmlFor = 'difficulty-select'
-  label.textContent = 'LEVEL'
+  label.textContent = t('sudoku.level')
 
   const select = document.createElement('select')
   select.className = 'difficulty-select'
@@ -30,9 +30,9 @@ export function createDifficultySelect(
   select.name = 'difficulty'
 
   const options: Array<{ value: string; text: string }> = [
-    { value: 'easy', text: 'Easy' },
-    { value: 'medium', text: 'Medium' },
-    { value: 'hard', text: 'Hard' },
+    { value: 'easy', text: t('sudoku.easy') },
+    { value: 'medium', text: t('sudoku.medium') },
+    { value: 'hard', text: t('sudoku.hard') },
   ]
 
   select.addEventListener('change', () => {
@@ -82,7 +82,7 @@ export function createKeypad(
   const clearBtn = document.createElement('button')
   clearBtn.type = 'button'
   clearBtn.className = 'keypad-btn keypad-clear'
-  clearBtn.textContent = 'X'
+  clearBtn.textContent = t('sudoku.clear')
   clearBtn.addEventListener('click', () => {
     const activeCellInput = getActiveCellInput()
     if (!activeCellInput) return
@@ -98,7 +98,7 @@ export function createKeypad(
   const checkBtn = document.createElement('button')
   checkBtn.type = 'button'
   checkBtn.className = 'keypad-btn keypad-check'
-  checkBtn.textContent = 'Check'
+  checkBtn.textContent = t('sudoku.check')
   checkBtn.addEventListener('click', () => {
     checkSolution()
   })
@@ -107,7 +107,7 @@ export function createKeypad(
   const resetBtn = document.createElement('button')
   resetBtn.type = 'button'
   resetBtn.className = 'keypad-btn keypad-check'
-  resetBtn.textContent = 'Reset'
+  resetBtn.textContent = t('sudoku.reset')
   resetBtn.addEventListener('click', () => {
     resetGame()
   })
