@@ -202,6 +202,47 @@ npm run dev
 
 ---
 
+## 國際化（i18n）
+
+### 架構
+
+前端實作了輕量的自建 i18n 模組（`frontend/src/i18n/`），不依賴外部套件：
+
+```
+/frontend/src/i18n/
+  en.ts       -- 英文翻譯（以 as const 定義，同時作為 TranslationKey 型別來源）
+  zh-TW.ts    -- 繁體中文翻譯
+  index.ts    -- initLocale(), t(), setLocale(), getLocale()
+```
+
+### 語言偵測優先順序
+
+1. `localStorage('locale')`（使用者手動切換後儲存）
+2. `navigator.language` exact match（如 `zh-TW`）
+3. `navigator.language` prefix match（如 `zh-CN` → `zh-TW`、`en-US` → `en`）
+4. 預設語言：`en`
+
+prefix match 的目的是讓語言變體（如 `zh-CN`、`zh-HK`、`en-GB`）能對應到最接近的支援語言，而非直接 fallback 成預設。
+
+### 支援語言
+
+| locale | 說明 |
+|---|---|
+| `en` | English（預設） |
+| `zh-TW` | 繁體中文 |
+
+### 語言切換
+
+側邊選單底部有下拉選單可切換語言。切換時將偏好存入 `localStorage` 並 reload 頁面，以確保所有動態建立的 DOM 都以新語言重新渲染。
+
+### 新增語言
+
+1. 在 `src/i18n/` 新增 `<locale>.ts`，型別為 `{ [K in keyof typeof en]: string }`
+2. 在 `src/i18n/index.ts` import 並加入 `locales` 與 `SUPPORTED_LOCALES`
+3. 在 `main.ts` 的 `localeLabels` 加上顯示名稱
+
+---
+
 ## 疑難排解與修復紀錄
 
 ### HTML 表格空欄位塌陷問題 (Sudoku History)
