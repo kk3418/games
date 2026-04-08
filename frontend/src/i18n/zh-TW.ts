@@ -1,7 +1,7 @@
 import type en from './en'
 
 const zhTW: { [K in keyof typeof en]: string } = {
-  'app.title': '遊戲',
+  'app.title': '數獨',
   'app.sidebarHeading': '數獨',
   'app.toggleMenu': '切換選單',
 

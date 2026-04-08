@@ -1,5 +1,5 @@
 const en = {
-  'app.title': 'Game',
+  'app.title': 'Sudoku',
   'app.sidebarHeading': 'Sudoku',
   'app.toggleMenu': 'Toggle menu',
 
