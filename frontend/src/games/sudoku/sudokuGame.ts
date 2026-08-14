@@ -4,7 +4,6 @@ import { createDifficultySelect, createKeypad, createSudokuTable } from '@/games
 import { showEndGameModal } from '@/games/sudoku/endGameModal'
 import type { Game } from '@/types/game'
 import { sudokuApi, type SudokuGameData } from '@/games/sudoku/sudokuApi'
-import { sudokuHistoryApi } from '@/games/sudokuHistory/sudokuHistoryApi'
 import { debounce } from '@/utilities/debounce'
 import { t } from '@/i18n'
 
@@ -163,20 +162,7 @@ export class SudokuGame implements Game {
     })
   }
 
-  private logHistory({ isComplete, isInProgress }: { isComplete: boolean; isInProgress: boolean }) {
-    const level = this.currentLevel || this.gameData?.level || 'medium'
-    const initialPuzzle = this.basePuzzle
-    const puzzle = this.currentProgress
-    const board = this.solutionBoard
-
-    if (!initialPuzzle || !puzzle || !board) return
-
-    sudokuHistoryApi
-      .createHistory({ initialPuzzle, puzzle, board, level, isComplete, isInProgress })
-      .catch((err) => console.error('Failed to log sudoku history', err))
-  }
-
-  private checkSolution() {
+  private async checkSolution() {
     console.log('check solution')
 
     const boardStorage = this.solutionBoard
@@ -209,7 +195,11 @@ export class SudokuGame implements Game {
     const lastGameLevel = this.currentLevel ?? ''
 
     // Record completed game
-    this.logHistory({ isComplete: true, isInProgress: false })
+    await this.updateGameToServer({
+      id: this.gameData?.id,
+      isComplete: true,
+      isInProgress: false,
+    })
 
     showEndGameModal({
       title: t('sudoku.congratulations'),
