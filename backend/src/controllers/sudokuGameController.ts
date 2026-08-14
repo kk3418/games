@@ -99,3 +99,19 @@ export const updateSudokuGame = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const getHistory = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user.userId;
+
+    const histories = await prisma.sudokuGame.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json(histories);
+  } catch (error) {
+    console.error('Error fetching sudoku history:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

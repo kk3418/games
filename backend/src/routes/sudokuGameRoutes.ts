@@ -6,6 +6,7 @@ import { validateJsonHeader } from '@/middleware/headerCheckMiddleware';
 const router = Router();
 
 router.get('/', authenticateToken, sudokuGameController.getSudokuGame);
+router.get('/history', authenticateToken, sudokuGameController.getHistory);
 router.post('/', authenticateToken, validateJsonHeader, sudokuGameController.createSudokuGame);
 router.patch('/', authenticateToken, validateJsonHeader, sudokuGameController.updateSudokuGame);
 

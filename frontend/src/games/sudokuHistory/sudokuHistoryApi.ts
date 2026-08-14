@@ -15,15 +15,6 @@ export interface SudokuHistoryItem {
 
 export const sudokuHistoryApi = {
   getHistory: async (): Promise<SudokuHistoryItem[]> => {
-    return api.get<SudokuHistoryItem[]>('/sudoku-history')
-  },
-  createHistory: async (data: Omit<SudokuHistoryItem, 'id'>): Promise<SudokuHistoryItem> => {
-    return api.post<SudokuHistoryItem>('/sudoku-history', data)
-  },
-  updateHistoryStatus: async (
-    id: number,
-    isComplete: boolean,
-  ): Promise<SudokuHistoryItem | null> => {
-    return api.patch<SudokuHistoryItem>(`/sudoku-history/${id}`, { isComplete })
+    return api.get<SudokuHistoryItem[]>('/sudoku-game/history')
   },
 }
