@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   root: './',
   build: {
     outDir: 'dist',
@@ -18,5 +18,10 @@ export default defineConfig({
   },
   server: {
     port: 8080
-  }
-})
+  },
+  esbuild: mode === 'production'
+    ? {
+        pure: ['console.log', 'console.info', 'console.debug', 'console.trace']
+      }
+    : undefined
+}))
